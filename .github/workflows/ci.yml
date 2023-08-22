@@ -31,13 +31,13 @@ jobs:
     - name: Build frontend
       run: |
         cd frontend
-        pnpm install
+        pnpm install --no-frozen-lockfile
         pnpm generate
         cd ..
     - name: Build backend
       run: |
         cd backend
-        pnpm install 
+        pnpm install --no-frozen-lockfile
         pnpm build
         cd ..
     - name: Assemle server
