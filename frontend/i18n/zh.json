@@ -1,0 +1,52 @@
+{
+  "seo": {
+    "title": "P2P 文件传输",
+    "description": "一个 P2P 传输网页应用"
+  },
+  "index": {
+    "select_file": "选择文件",
+    "send": "发送",
+    "click_to_copy": "点击复制",
+    "link": "链接：",
+    "file_size": "文件大小：",
+    "self_id": "本机 ID：",
+    "peer_id": "对等端 ID：",
+    "status": {
+      "_": "状态：",
+      "idle": "空闲",
+      "waiting": "等待连接",
+      "transfering": "传输中",
+      "finished": "完成",
+      "error": "错误"
+    },
+    "progress": "进度：",
+    "avg_speed": "平均速度：",
+    "ins_speed": "瞬时速度："
+  },
+  "recv": {
+    "self_id": "本机 ID：",
+    "peer_id": "对等端 ID：",
+    "file_name": "文件名：",
+    "file_size": "文件大小：",
+    "status": {
+      "_": "状态：",
+      "idle": "空闲",
+      "connecting": "连接中",
+      "transfering": "传输中",
+      "finished": "完成",
+      "error": "错误"
+    },
+    "progress": "进度：",
+    "avg_speed": "平均速度：",
+    "ins_speed": "瞬时速度：",
+    "get_file": "获取文件"
+  },
+  "error": {
+    "qrcode_gen": "无法生成分享二维码",
+    "webrtc_disabled": "WebRTC 被浏览器禁用",
+    "webrtc_conn": "无法建立 P2P 连接",
+    "signal_conn": "无法连接信令服务器",
+    "signal_disconn": "与信令服务器意外断开",
+    "data_ch": "数据传输出错"
+  }
+}
