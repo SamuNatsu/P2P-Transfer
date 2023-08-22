@@ -32,12 +32,14 @@ jobs:
       run: |
         cd frontend
         pnpm install --no-frozen-lockfile
+        pnpm update
         pnpm generate
         cd ..
     - name: Build backend
       run: |
         cd backend
         pnpm install --no-frozen-lockfile
+        pnpm update
         pnpm build
         cd ..
     - name: Assemle server
