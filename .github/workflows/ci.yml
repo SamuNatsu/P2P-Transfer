@@ -45,7 +45,7 @@ jobs:
         rm -rf server
         mkdir server
         cp backend/dist/server.min.cjs server/server.min.cjs
-        cp backend/dist/package.json server/package.json
+        cp backend/package.json server/package.json
         cp -r frontend/dist/ server/www/
     - name: Create artifact
       run: tar --dereference --hard-dereference --directory server/ -zcvf p2p-transfer.tar.gz .
