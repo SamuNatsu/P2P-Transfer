@@ -19,7 +19,11 @@ const PACK_SIZE: number = 16384;
 export function startSendFile(
   file: File,
   cbError: (err: P2PErrorType) => void,
-  cbConnect: (selfId: string, socket: Socket, peerConn: RTCPeerConnection) => void,
+  cbConnect: (
+    selfId: string,
+    socket: Socket,
+    peerConn: RTCPeerConnection
+  ) => void,
   cbPeer: (peerId: string) => void,
   cbStart: () => void,
   cbProgress: (size: number) => void,
@@ -111,7 +115,8 @@ export function startSendFile(
   };
   peerConn.onconnectionstatechange = (): void => {
     if (peerConn.connectionState === 'failed') {
-      socket.disconnect();
+      socket.emit('retry', peerId);
+      // socket.disconnect();
     }
   };
   peerConn.ondatachannel = (ev: RTCDataChannelEvent): void => {
@@ -180,7 +185,11 @@ export function startRecvFile(
   peerId: string,
   cbError: (err: P2PErrorType) => void,
   cbReady: () => void,
-  cbConnect: (selfId: string, socket: Socket, peerConn: RTCPeerConnection) => void,
+  cbConnect: (
+    selfId: string,
+    socket: Socket,
+    peerConn: RTCPeerConnection
+  ) => void,
   cbInfo: (name: string, size: number) => void,
   cbDataOpen: () => void,
   cbMessage: (data: ArrayBuffer) => void,
@@ -247,6 +256,17 @@ export function startRecvFile(
     await peerConn.addIceCandidate(data);
   });
 
+  socket.on('retry', (inPeerId: string): void => {
+    if (peerId !== inPeerId) {
+      return;
+    }
+    peerConn
+      .createOffer({ iceRestart: true })
+      .then(async (offer: RTCSessionDescriptionInit): Promise<void> => {
+        await peerConn.setLocalDescription(offer);
+        socket.emit('offer', peerId, offer);
+      });
+  });
   socket.on('done', (inPeerId: string): void => {
     if (peerId !== inPeerId) {
       return;
