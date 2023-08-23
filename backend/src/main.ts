@@ -4,7 +4,8 @@ import { readFileSync } from 'fs';
 import http from 'http';
 import https from 'https';
 import { PORT, SSL, SSL_CERT, SSL_KEY } from './config';
-import { Server, Socket } from 'socket.io';
+import { DisconnectReason, Server, Socket } from 'socket.io';
+import { customAlphabet } from 'nanoid';
 
 /* Express application */
 const app: express.Application = express();
@@ -13,6 +14,7 @@ const app: express.Application = express();
 let cert: string = '';
 let key: string = '';
 if (SSL) {
+  console.log('[Server] SSL enabled');
   cert = readFileSync(SSL_CERT, 'utf-8');
   key = readFileSync(SSL_KEY, 'utf-8');
 }
@@ -26,42 +28,86 @@ const server: http.Server | https.Server = SSL
 const io: Server = new Server(server);
 const sessions: Map<string, Socket> = new Map();
 
+const nanoid: (size?: number) => string = customAlphabet(
+  '346789ABCDEFGHJKLMNPQRTUVWXYabcdefghijkmnpqrtwxyz'
+);
+function createId(): string {
+  while (true) {
+    const id: string = nanoid(8);
+    if (!sessions.has(id)) {
+      return id;
+    }
+  }
+}
+
 /* Websocket callback */
 io.on('connection', (socket: Socket): void => {
-  console.log(`New connection: ${socket.id}`);
-  sessions.set(socket.id, socket);
+  const id: string = createId();
 
-  const handle: NodeJS.Timeout = setTimeout((): void => {
-    console.log(`Connection timeout: ${socket.id}`);
-    socket.disconnect(true);
-  }, 300000);
+  console.log(`[Websocket] New connection: ${id}`);
+  sessions.set(id, socket);
 
-  socket.on('disconnect', (): void => {
-    clearTimeout(handle);
-    sessions.delete(socket.id);
-    console.log(`Disconnected: ${socket.id}`);
+  socket.on('error', (err: Error): void => {
+    console.error(`[Sebsocket] Error: ${id}`);
+    console.error(err);
   });
-  socket.on('offer', (pack: { peerId: string; data: any }): void => {
-    console.log(`Offer: ${socket.id} -> ${pack.peerId}`);
-    sessions.get(pack.peerId)?.emit('offer', {
-      ...pack,
-      peerId: socket.id
-    });
+  socket.on('disconnect', (reason: DisconnectReason): void => {
+    console.log(`[Websocket] Disconnected: ${id} (${reason})`);
+    sessions.delete(id);
   });
-  socket.on('answer', (pack: { peerId: string; data: any }): void => {
-    console.log(`Answer: ${socket.id} -> ${pack.peerId}`);
-    sessions.get(pack.peerId)?.emit('answer', {
-      ...pack,
-      peerId: socket.id
-    });
+
+  socket.on('request', (peerId: string): void => {
+    if (typeof peerId !== 'string') {
+      return;
+    }
+
+    console.log(`[Websocket] Info request: ${id} -> ${peerId}`);
+    sessions.get(peerId)?.emit('request', id);
   });
-  socket.on('candidate', (pack: { peerId: string; data: any }): void => {
-    console.log(`Candidate: ${socket.id} -> ${pack.peerId}`);
-    sessions.get(pack.peerId)?.emit('candidate', {
-      ...pack,
-      peerId: socket.id
-    });
+  socket.on('response', (peerId: string, data: any): void => {
+    if (typeof peerId !== 'string') {
+      return;
+    }
+
+    console.log(`[Websocket] Info response: ${id} -> ${peerId}`);
+    sessions.get(peerId)?.emit('response', id, data);
   });
+
+  socket.on('offer', (peerId: string, data: any): void => {
+    if (typeof peerId !== 'string') {
+      return;
+    }
+
+    console.log(`[Websocket] WebRTC offer: ${id} -> ${peerId}`);
+    sessions.get(peerId)?.emit('offer', id, data);
+  });
+  socket.on('answer', (peerId: string, data: any): void => {
+    if (typeof peerId !== 'string') {
+      return;
+    }
+
+    console.log(`[Websocket] WebRTC answer: ${id} -> ${peerId}`);
+    sessions.get(peerId)?.emit('answer', id, data);
+  });
+  socket.on('candidate', (peerId: string, data: any): void => {
+    if (typeof peerId !== 'string') {
+      return;
+    }
+
+    console.log(`[Websocket] WebRTC candidate: ${id} -> ${peerId}`);
+    sessions.get(peerId)?.emit('candidate', id, data);
+  });
+
+  socket.on('done', (peerId: string): void => {
+    if (typeof peerId !== 'string') {
+      return;
+    }
+
+    console.log(`[Websocket] Done signal: ${id} -> ${peerId}`);
+    sessions.get(peerId)?.emit('done', id);
+  });
+
+  socket.emit('assign', id);
 });
 
 /* Serve static pages */
@@ -69,5 +115,5 @@ app.use(express.static('./www'));
 
 /* Start server */
 server.listen(PORT, (): void => {
-  console.log(`Server listening on port ${PORT}`);
+  console.log(`[Server] Start listening on port ${PORT}`);
 });

@@ -32,6 +32,8 @@ export function startSendFile(
 
   const socket: Socket = io({ reconnection: false });
   const peerConn: RTCPeerConnection = new RTCPeerConnection({
+    bundlePolicy: 'max-bundle',
+    iceCandidatePoolSize: 32,
     iceServers: serverList.map(
       (value: string): RTCIceServer => ({ urls: value })
     )
@@ -42,7 +44,7 @@ export function startSendFile(
   socket.on('connect', (): void => {
     cbConnect(socket.id);
   });
-  socket.on('connect_error', (err: Error): void => {
+  socket.on('connect_error', (): void => {
     cbError(P2PErrorType.SignalServerConnectError);
   });
   socket.on('disconnect', (): void => {
@@ -92,8 +94,17 @@ export function startSendFile(
       data: ev.candidate
     });
   };
+  peerConn.onicecandidateerror = (ev: Event): void => {
+    const err: RTCPeerConnectionIceErrorEvent =
+      ev as RTCPeerConnectionIceErrorEvent;
+
+    console.error(err);
+  };
   peerConn.onconnectionstatechange = (): void => {
-    if (peerConn.connectionState === 'failed' || peerConn.connectionState === 'connected') {
+    if (
+      peerConn.connectionState === 'failed' ||
+      peerConn.connectionState === 'connected'
+    ) {
       socket.disconnect();
     }
   };
@@ -177,6 +188,8 @@ export function startRecvFile(
 
   const socket: Socket = io({ reconnection: false });
   const peerConn: RTCPeerConnection = new RTCPeerConnection({
+    bundlePolicy: 'max-bundle',
+    iceCandidatePoolSize: 32,
     iceServers: serverList.map(
       (value: string): RTCIceServer => ({ urls: value })
     )
@@ -224,7 +237,10 @@ export function startRecvFile(
     });
   };
   peerConn.onconnectionstatechange = (): void => {
-    if (peerConn.connectionState === 'failed' || peerConn.connectionState === 'connected') {
+    if (
+      peerConn.connectionState === 'failed' ||
+      peerConn.connectionState === 'connected'
+    ) {
       socket.disconnect();
     }
   };
@@ -249,7 +265,7 @@ export function startRecvFile(
   };
 
   peerConn
-    .createOffer()
+    .createOffer({ iceRestart: true })
     .then(async (offer: RTCSessionDescriptionInit): Promise<void> => {
       await peerConn.setLocalDescription(offer);
       socket.emit('offer', {

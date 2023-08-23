@@ -6,9 +6,9 @@ import typescript from '@rollup/plugin-typescript';
 export default defineConfig({
   input: 'src/main.ts',
   output: {
-    file: 'dist/server.min.cjs',
-    format: 'cjs'
+    file: 'dist/server.min.mjs',
+    format: 'esm'
   },
-  external: ['express', 'socket.io', 'http', 'https', 'dotenv'],
+  external: ['express', 'socket.io', 'http', 'https', 'dotenv', 'fs', 'nanoid'],
   plugins: [terser(), typescript()]
 });
