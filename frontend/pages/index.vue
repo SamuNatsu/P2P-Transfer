@@ -93,6 +93,9 @@ async function sendFile(): Promise<void> {
   startSendFile(
     file,
     (err: P2PErrorType): void => {
+      window.clearInterval(handle);
+      window.onbeforeunload = null;
+
       if (refs.status === Status.Error) {
         return;
       }
@@ -153,8 +156,8 @@ async function sendFile(): Promise<void> {
         lastSendSize = refs.sendSize;
       }, 500);
     },
-    (size: number): void => {
-      refs.sendSize += size;
+    (recvSize: number): void => {
+      refs.sendSize = recvSize;
     },
     (): void => {
       refs.status = Status.Finished;

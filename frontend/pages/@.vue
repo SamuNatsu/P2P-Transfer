@@ -76,6 +76,9 @@ onMounted(async (): Promise<void> => {
   const cb: () => void = startRecvFile(
     refs.peerId,
     (err: P2PErrorType): void => {
+      window.clearInterval(handle);
+      window.onbeforeunload = null;
+
       if (refs.status === Status.Error) {
         return;
       }
