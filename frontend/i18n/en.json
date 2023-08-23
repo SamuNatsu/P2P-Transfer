@@ -6,7 +6,7 @@
   "index": {
     "select_file": "Select File",
     "send": "Send",
-    "click_to_copy": "Click to Copy",
+    "click_to_copy": "Click to Copy Link",
     "link": "Link: ",
     "file_size": "File Size: ",
     "self_id": "Host ID: ",
@@ -14,7 +14,8 @@
     "status": {
       "_": "Status: ",
       "idle": "Idle",
-      "waiting": "Waiting",
+      "waiting_peer": "Waiting peero",
+      "waiting_accept": "Waiting accept",
       "transfering": "Transfering",
       "finished": "Finished",
       "error": "Error"
@@ -31,7 +32,9 @@
     "status": {
       "_": "Status: ",
       "idle": "Idle",
-      "connecting": "Connecting",
+      "requesting": "Requesting meta",
+      "waiting": "Waiting for start",
+      "connecting": "Constructing P2P channel",
       "transfering": "Transfering",
       "finished": "Finished",
       "error": "Error"
@@ -39,7 +42,7 @@
     "progress": "Progress: ",
     "avg_speed": "Avg Speed: ",
     "ins_speed": "Ins Speed: ",
-    "get_file": "Get File"
+    "start_download": "Start Download"
   },
   "error": {
     "qrcode_gen": "Fail to generate QR code",

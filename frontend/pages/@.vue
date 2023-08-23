@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { Base64 } from 'js-base64';
+import { Socket } from 'socket.io-client';
 import { P2PErrorType } from '../utils/p2p';
-import { write } from 'fs';
 
 /* Types */
 enum Status {
   Idle,
+  Requesting,
+  Waiting,
   Connecting,
   Transfering,
   Finished,
@@ -33,18 +34,15 @@ useHeadSafe({
 /* Reactive */
 const refs = reactive({
   status: Status.Idle,
-  selfId: null as null | string,
-  peerId: null as null | string,
-  fileName: '',
+  selfId: '',
+  peerId: '',
+  fileName: null as null | string,
   fileSize: 0,
   recvSize: 0,
   avgSpeed: 0,
   insSpeed: 0,
-  error: null as null | string
+  error: ''
 });
-
-/* Variable */
-let writer: WritableStreamDefaultWriter;
 
 /* Computed */
 const sizeTxt = computed((): string => convert(refs.fileSize, 'B'));
@@ -52,24 +50,19 @@ const avgSpeedTxt = computed((): string => convert(refs.avgSpeed, 'B/s'));
 const insSpeedTxt = computed((): string => convert(refs.insSpeed, 'B/s'));
 
 /* Functions */
-function download(): void {
-  writer.close();
-}
+let start: () => void;
 
 /* Life cycle */
 onMounted(async (): Promise<void> => {
-  const streamSaver = (await import('streamsaver')).default;
-  streamSaver.mitm = '/mitm.html';
-
-  if (route.query.d === undefined) {
+  if (Object.keys(route.query).length === 0) {
     router.push('/');
     return;
   }
 
-  const data: any = JSON.parse(Base64.decode(route.query.d as string));
-  refs.peerId = data.peerId;
-  refs.fileName = data.fileName;
-  refs.fileSize = data.fileSize;
+  const streamSaver = (await import('streamsaver')).default;
+  streamSaver.mitm = '/mitm.html';
+
+  refs.peerId = Object.keys(route.query)[0];
 
   let startTime: number;
   let lastRecvSize: number = 0;
@@ -78,13 +71,11 @@ onMounted(async (): Promise<void> => {
   let lock: boolean = false;
 
   const blobMap: Map<number, Uint8Array> = new Map();
-  const stream: WritableStream = streamSaver.createWriteStream(refs.fileName, {
-    size: refs.fileSize
-  });
-  writer = stream.getWriter();
+  let stream: WritableStream;
+  let writer: WritableStreamDefaultWriter;
 
-  startRecvFile(
-    data.peerId,
+  const cb: () => void = startRecvFile(
+    refs.peerId,
     (err: P2PErrorType): void => {
       if (refs.status === Status.Error) {
         return;
@@ -110,10 +101,27 @@ onMounted(async (): Promise<void> => {
       }
     },
     (): void => {
-      refs.status = Status.Connecting;
+      refs.status = Status.Requesting;
     },
-    (selfId: string): void => {
+    (selfId: string, socket: Socket, peerConn: RTCPeerConnection): void => {
       refs.selfId = selfId;
+      window.onbeforeunload = (): string =>{
+        return 'Sure to exit?';
+      };
+      window.onunload = (): void => {
+        socket.disconnect();
+        peerConn.close();
+      };
+    },
+    (name: string, size: number): void => {
+      refs.fileName = name;
+      refs.fileSize = size;
+
+      stream = streamSaver.createWriteStream(refs.fileName, {
+        size: refs.fileSize
+      });
+      writer = stream.getWriter();
+      refs.status = Status.Waiting;
     },
     () => {
       refs.status = Status.Transfering;
@@ -134,13 +142,11 @@ onMounted(async (): Promise<void> => {
         view.getUint32(0),
         new Uint8Array(data.slice(4))
       );
-      console.log(view.getUint32(0));
-      if (blobMap.size > 128 && !lock) {
+
+      if (!lock) {
         lock = true;
         while (blobMap.has(order)) {
-          writer.write(blobMap.get(order) as Uint8Array).then(()=>{
-            console.log(writer);
-          });
+          writer.write(blobMap.get(order) as Uint8Array);
           blobMap.delete(order);
           order++;
         }
@@ -152,17 +158,22 @@ onMounted(async (): Promise<void> => {
         if (lock) {
           continue;
         }
-        writer.write(blobMap.get(order) as Uint8Array).then(()=>{
-          console.log(writer);
-        });
+        writer.write(blobMap.get(order) as Uint8Array);
         blobMap.delete(order);
         order++;
       }
 
       window.clearInterval(handle);
       refs.status = Status.Finished;
+      writer.close();
+      window.onbeforeunload = null;
     }
   );
+
+  start = (): void => {
+    refs.status = Status.Connecting;
+    cb();
+  };
 });
 </script>
 
@@ -183,7 +194,8 @@ onMounted(async (): Promise<void> => {
         </p>
         <p>
           <strong>{{ $t('recv.status._') }}</strong>
-          <span v-if="refs.status === Status.Idle" class="text-gray-400">{{ $t('recv.status.idle') }}</span>
+          <span v-if="refs.status === Status.Requesting" class="text-gray-400">{{ $t('recv.status.requesting') }}</span>
+          <span v-else-if="refs.status === Status.Waiting" class="text-purple-500">{{ $t('recv.status.waiting') }}</span>
           <span v-else-if="refs.status === Status.Connecting" class="text-yellow-500">{{ $t('recv.status.connecting') }}</span>
           <span v-else-if="refs.status === Status.Transfering" class="text-blue-500">{{ $t('recv.status.transfering') }}</span>
           <span v-else-if="refs.status === Status.Finished" class="text-green-500">{{ $t('recv.status.finished') }}</span>
@@ -194,7 +206,7 @@ onMounted(async (): Promise<void> => {
           <p><strong>{{ $t('recv.avg_speed') }}</strong>{{ avgSpeedTxt }}</p>
           <p><strong>{{ $t('recv.ins_speed') }}</strong>{{ insSpeedTxt }}</p>
         </template>
-        <button v-if="refs.status === Status.Finished" @click="download" class="bg-white border-2 border-green-500 font-bold mt-4 px-4 py-1 rounded-3xl select-none self-center transition-colors hover:bg-green-500 hover:text-white">{{ $t('recv.get_file') }}</button>
+        <button v-if="refs.fileName" @click="start" class="bg-white border-2 border-green-500 font-bold mt-4 px-4 py-1 rounded-3xl select-none self-center transition-colors disabled:bg-white disabled:cursor-not-allowed disabled:opacity-50 disabled:text-black hover:bg-green-500 hover:text-white" :disabled="refs.status >= Status.Connecting">{{ $t('recv.start_download') }}</button>
       </main>
       <div class="max-w-sm text-red-500 break-all">{{ refs.error }}</div>
     </ClientOnly>

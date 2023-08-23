@@ -6,7 +6,7 @@
   "index": {
     "select_file": "选择文件",
     "send": "发送",
-    "click_to_copy": "点击复制",
+    "click_to_copy": "点击复制链接",
     "link": "链接：",
     "file_size": "文件大小：",
     "self_id": "本机 ID：",
@@ -14,7 +14,8 @@
     "status": {
       "_": "状态：",
       "idle": "空闲",
-      "waiting": "等待连接",
+      "waiting_peer": "等待对等端连接",
+      "waiting_accept": "等待对等端同意下载",
       "transfering": "传输中",
       "finished": "完成",
       "error": "错误"
@@ -31,7 +32,9 @@
     "status": {
       "_": "状态：",
       "idle": "空闲",
-      "connecting": "连接中",
+      "requesting": "正在请求元数据",
+      "waiting": "等待开始",
+      "connecting": "正在建立 P2P 通道",
       "transfering": "传输中",
       "finished": "完成",
       "error": "错误"
@@ -39,7 +42,7 @@
     "progress": "进度：",
     "avg_speed": "平均速度：",
     "ins_speed": "瞬时速度：",
-    "get_file": "获取文件"
+    "start_download": "开始下载"
   },
   "error": {
     "qrcode_gen": "无法生成分享二维码",
