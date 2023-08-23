@@ -46,7 +46,7 @@ jobs:
       run: |
         rm -rf server
         mkdir server
-        cp backend/dist/server.min.cjs server/server.min.cjs
+        cp backend/dist/server.min.mjs server/server.min.mjs
         cp backend/package.json server/package.json
         cp -r frontend/dist/ server/www/
     - name: Create artifact
