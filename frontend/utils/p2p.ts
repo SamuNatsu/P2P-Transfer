@@ -26,7 +26,7 @@ export function startSendFile(
   ) => void,
   cbPeer: (peerId: string) => void,
   cbStart: () => void,
-  cbProgress: (size: number) => void,
+  cbProgress: (recvBytes: number) => void,
   cbDone: () => void
 ): void {
   if (typeof RTCPeerConnection === 'undefined') {
@@ -34,18 +34,16 @@ export function startSendFile(
     return;
   }
 
+  let selfId: null | string = null;
+  let peerId: null | string = null;
+  let done: boolean = false;
+
   const socket: Socket = io({ reconnection: false });
   const peerConn: RTCPeerConnection = new RTCPeerConnection({
-    bundlePolicy: 'max-bundle',
-    iceCandidatePoolSize: 32,
     iceServers: serverList.map(
       (value: string): RTCIceServer => ({ urls: value })
     )
   });
-
-  let selfId: null | string = null;
-  let peerId: null | string = null;
-  let done: boolean = false;
 
   socket.on('connect_error', (): void => {
     cbError(P2PErrorType.SignalServerConnectError);
@@ -101,43 +99,37 @@ export function startSendFile(
     await peerConn.addIceCandidate(data);
   });
 
-  socket.on('done', (inPeerId: string): void => {
+  socket.on('progress', (inPeerId: string, recvBytes: number): void => {
     if (peerId !== inPeerId) {
       return;
     }
-    peerConn.close();
-    socket.disconnect();
-    cbDone();
+    cbProgress(recvBytes);
+    if (recvBytes >= file.size) {
+      done = true;
+      cbDone();
+      socket.disconnect();
+    }
   });
 
-  peerConn.onicecandidate = (ev: RTCPeerConnectionIceEvent) => {
-    socket.emit('candidate', peerId, ev.candidate);
-  };
-  peerConn.onconnectionstatechange = (): void => {
+  peerConn.addEventListener('icecandidate', (ev: RTCPeerConnectionIceEvent) => {
+    if (ev.candidate !== null) {
+      socket.emit('candidate', peerId, ev.candidate);
+    }
+  });
+  peerConn.addEventListener('connectionstatechange', (): void => {
     if (peerConn.connectionState === 'failed') {
       socket.emit('retry', peerId);
-      // socket.disconnect();
     }
-  };
-  peerConn.ondatachannel = (ev: RTCDataChannelEvent): void => {
-    const dataCh: RTCDataChannel = ev.channel;
-    const reader: FileReader = new FileReader();
-
+  });
+  peerConn.addEventListener('datachannel', (ev: RTCDataChannelEvent): void => {
     let offset: number = 0;
     let order: number = 0;
 
+    const dataCh: RTCDataChannel = ev.channel;
+    const reader: FileReader = new FileReader();
+
     function readSlice(): void {
       if (offset >= file.size) {
-        function closeConn(): void {
-          if (dataCh.bufferedAmount > 0) {
-            setTimeout((): void => {
-              closeConn();
-            }, 100);
-          }
-          done = true;
-          socket.emit('done', peerId);
-        }
-        closeConn();
         return;
       }
       if (dataCh.bufferedAmount > BUFF_SIZE) {
@@ -151,33 +143,31 @@ export function startSendFile(
 
       reader.readAsArrayBuffer(file.slice(offset, offset + len));
       offset += len;
-      cbProgress(len);
     }
 
-    dataCh.onerror = (): void => {
+    dataCh.addEventListener('error', (): void => {
       if (done) {
         return;
       }
       cbError(P2PErrorType.DataChannelError);
-    };
-    dataCh.onopen = (): void => {
-      cbStart();
-    };
+    });
+    dataCh.addEventListener('open', cbStart);
 
-    reader.onload = (): void => {
+    reader.addEventListener('load', (): void => {
       const result: ArrayBuffer = reader.result as ArrayBuffer;
       const wrapper: Uint8Array = new Uint8Array(result.byteLength + 4);
       const view: DataView = new DataView(wrapper.buffer);
 
       view.setUint32(0, order);
       wrapper.set(new Uint8Array(result), 4);
-
       dataCh.send(wrapper);
+
       ++order;
       readSlice();
-    };
+    });
+
     readSlice();
-  };
+  });
 }
 
 /* Start receive file */
@@ -192,7 +182,7 @@ export function startRecvFile(
   ) => void,
   cbInfo: (name: string, size: number) => void,
   cbDataOpen: () => void,
-  cbMessage: (data: ArrayBuffer) => void,
+  cbMessage: (data: ArrayBuffer) => number,
   cbDone: () => void
 ): () => void {
   if (typeof RTCPeerConnection === 'undefined') {
@@ -202,18 +192,17 @@ export function startRecvFile(
 
   cbReady();
 
+  let selfId: string | null = null;
+  let totSize: number = 0;
+  let done: boolean = false;
+
   const socket: Socket = io({ reconnection: false });
   const peerConn: RTCPeerConnection = new RTCPeerConnection({
-    bundlePolicy: 'max-bundle',
-    iceCandidatePoolSize: 32,
     iceServers: serverList.map(
       (value: string): RTCIceServer => ({ urls: value })
     )
   });
   const dataCh: RTCDataChannel = peerConn.createDataChannel('fileTransfer');
-
-  let selfId: string | null = null;
-  let done: boolean = false;
 
   socket.on('connect_error', (): void => {
     cbError(P2PErrorType.SignalServerConnectError);
@@ -240,6 +229,7 @@ export function startRecvFile(
     if (peerId !== inPeerId) {
       return;
     }
+    totSize = data.fileSize;
     cbInfo(data.fileName, data.fileSize);
   });
 
@@ -267,31 +257,21 @@ export function startRecvFile(
         socket.emit('offer', peerId, offer);
       });
   });
-  socket.on('done', (inPeerId: string): void => {
-    if (peerId !== inPeerId) {
-      return;
+
+  peerConn.addEventListener('icecandidate', (ev: RTCPeerConnectionIceEvent) => {
+    if (ev.candidate !== null) {
+      socket.emit('candidate', peerId, ev.candidate);
     }
-    function closeConn(): void {
-      if (dataCh.bufferedAmount > 0) {
-        setTimeout((): void => {
-          closeConn();
-        }, 100);
-      }
-      done = true;
-      cbDone();
-      socket.emit('done', peerId);
-    }
-    closeConn();
   });
 
   peerConn.onicecandidate = (ev: RTCPeerConnectionIceEvent): void => {
     socket.emit('candidate', peerId, ev.candidate);
   };
-  peerConn.onconnectionstatechange = (): void => {
+  peerConn.addEventListener('connectionstatechange', (): void => {
     if (peerConn.connectionState === 'failed') {
       socket.disconnect();
     }
-  };
+  });
 
   dataCh.binaryType = 'arraybuffer';
   dataCh.onopen = (): void => {
@@ -304,7 +284,14 @@ export function startRecvFile(
     cbError(P2PErrorType.DataChannelError);
   };
   dataCh.onmessage = (ev: MessageEvent<any>): void => {
-    cbMessage(ev.data);
+    const recvBytes: number = cbMessage(ev.data);
+
+    socket.emit('progress', peerId, recvBytes);
+    if (recvBytes >= totSize) {
+      done = true;
+      cbDone();
+      socket.disconnect();
+    }
   };
 
   socket.emit('request', peerId);

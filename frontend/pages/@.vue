@@ -68,7 +68,6 @@ onMounted(async (): Promise<void> => {
   let lastRecvSize: number = 0;
   let handle: number;
   let order: number = 0;
-  let lock: boolean = false;
 
   const blobMap: Map<number, Uint8Array> = new Map();
   let stream: WritableStream;
@@ -105,7 +104,7 @@ onMounted(async (): Promise<void> => {
     },
     (selfId: string, socket: Socket, peerConn: RTCPeerConnection): void => {
       refs.selfId = selfId;
-      window.onbeforeunload = (): string =>{
+      window.onbeforeunload = (): string => {
         return 'Sure to exit?';
       };
       window.onunload = (): void => {
@@ -127,46 +126,35 @@ onMounted(async (): Promise<void> => {
       refs.status = Status.Transfering;
       startTime = new Date().getTime();
       handle = window.setInterval((): void => {
+        refs.avgSpeed =
+          (refs.recvSize / (new Date().getTime() - startTime)) * 1000;
         refs.insSpeed = (refs.recvSize - lastRecvSize) * 2;
         lastRecvSize = refs.recvSize;
       }, 500);
     },
-    (data: ArrayBuffer): void => {
+    (data: ArrayBuffer): number => {
       const view: DataView = new DataView(data);
 
-      refs.recvSize += data.byteLength - 4;
-      refs.avgSpeed =
-        (refs.recvSize / (new Date().getTime() - startTime)) * 1000;
+      blobMap.set(view.getUint32(0), new Uint8Array(data.slice(4)));
 
-      blobMap.set(
-        view.getUint32(0),
-        new Uint8Array(data.slice(4))
-      );
-
-      if (!lock) {
-        lock = true;
-        while (blobMap.has(order)) {
-          writer.write(blobMap.get(order) as Uint8Array);
-          blobMap.delete(order);
-          order++;
-        }
-        lock = false;
-      }
-    },
-    (): void => {
       while (blobMap.has(order)) {
-        if (lock) {
-          continue;
-        }
+        const blob: Uint8Array = blobMap.get(order) as Uint8Array;
+
+        refs.recvSize += blob.byteLength;
         writer.write(blobMap.get(order) as Uint8Array);
         blobMap.delete(order);
         order++;
       }
 
+      return refs.recvSize;
+    },
+    (): void => {
       window.clearInterval(handle);
       refs.status = Status.Finished;
       writer.close();
       window.onbeforeunload = null;
+      refs.avgSpeed =
+        (refs.recvSize / (new Date().getTime() - startTime)) * 1000;
     }
   );
 

@@ -121,15 +121,17 @@ async function sendFile(): Promise<void> {
       refs.selfId = selfId;
       refs.link = window.location.href + '/@?' + selfId;
 
-      QRCode.toDataURL(refs.link).then((value: string): void => {
-        refs.QRCodeData = value;
-      }).catch((): void => {
-        refs.status = Status.Error;
-        refs.error = t('error.qrcode_gen');
-        throw '';
-      });
+      QRCode.toDataURL(refs.link)
+        .then((value: string): void => {
+          refs.QRCodeData = value;
+        })
+        .catch((): void => {
+          refs.status = Status.Error;
+          refs.error = t('error.qrcode_gen');
+          throw '';
+        });
 
-      window.onbeforeunload = (): string =>{
+      window.onbeforeunload = (): string => {
         return 'Sure to exit?';
       };
       window.onunload = (): void => {
@@ -145,19 +147,21 @@ async function sendFile(): Promise<void> {
       refs.status = Status.Transfering;
       startTime = new Date().getTime();
       handle = window.setInterval((): void => {
+        refs.avgSpeed =
+          (refs.sendSize / (new Date().getTime() - startTime)) * 1000;
         refs.insSpeed = (refs.sendSize - lastSendSize) * 2;
         lastSendSize = refs.sendSize;
       }, 500);
     },
     (size: number): void => {
       refs.sendSize += size;
-      refs.avgSpeed =
-        (refs.sendSize / (new Date().getTime() - startTime)) * 1000;
     },
     (): void => {
       refs.status = Status.Finished;
       window.clearInterval(handle);
       window.onbeforeunload = null;
+      refs.avgSpeed =
+        (refs.sendSize / (new Date().getTime() - startTime)) * 1000;
     }
   );
 }
