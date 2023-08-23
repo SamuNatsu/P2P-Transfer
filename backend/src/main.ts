@@ -48,71 +48,99 @@ io.on('connection', (socket: Socket): void => {
   sessions.set(id, socket);
 
   socket.on('error', (err: Error): void => {
-    console.error(`[Sebsocket] Error: ${id}`);
     console.error(err);
+    console.error(`[Websocket] Error: ${id}`);
   });
   socket.on('disconnect', (reason: DisconnectReason): void => {
-    console.log(`[Websocket] Disconnected: ${id} (${reason})`);
     sessions.delete(id);
+    console.log(`[Websocket] Disconnected: ${id} (${reason})`);
   });
 
   socket.on('request', (peerId: string): void => {
     if (typeof peerId !== 'string') {
+      socket.emit('invalid peer id');
       return;
     }
-
-    console.log(`[Websocket] Info request: ${id} -> ${peerId}`);
+    if (!sessions.has(peerId)) {
+      socket.emit('peer not exists');
+      return;
+    }
     sessions.get(peerId)?.emit('request', id);
+    console.log(`[Websocket] Info request: ${id} -> ${peerId}`);
   });
   socket.on('response', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
+      socket.emit('invalid peer id');
       return;
     }
-
-    console.log(`[Websocket] Info response: ${id} -> ${peerId}`);
+    if (!sessions.has(peerId)) {
+      socket.emit('peer not exists');
+      return;
+    }
     sessions.get(peerId)?.emit('response', id, data);
+    console.log(`[Websocket] Info response: ${id} -> ${peerId}`);
   });
 
   socket.on('offer', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
+      socket.emit('invalid peer id');
       return;
     }
-
-    console.log(`[Websocket] WebRTC offer: ${id} -> ${peerId}`);
+    if (!sessions.has(peerId)) {
+      socket.emit('peer not exists');
+      return;
+    }
     sessions.get(peerId)?.emit('offer', id, data);
+    console.log(`[Websocket] WebRTC offer: ${id} -> ${peerId}`);
   });
   socket.on('answer', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
+      socket.emit('invalid peer id');
       return;
     }
-
-    console.log(`[Websocket] WebRTC answer: ${id} -> ${peerId}`);
+    if (!sessions.has(peerId)) {
+      socket.emit('peer not exists');
+      return;
+    }
     sessions.get(peerId)?.emit('answer', id, data);
+    console.log(`[Websocket] WebRTC answer: ${id} -> ${peerId}`);
   });
   socket.on('candidate', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
+      socket.emit('invalid peer id');
       return;
     }
-
-    console.log(`[Websocket] WebRTC candidate: ${id} -> ${peerId}`);
+    if (!sessions.has(peerId)) {
+      socket.emit('peer not exists');
+      return;
+    }
     sessions.get(peerId)?.emit('candidate', id, data);
+    console.log(`[Websocket] WebRTC candidate: ${id} -> ${peerId}`);
   });
 
   socket.on('retry', (peerId: string): void => {
     if (typeof peerId !== 'string') {
+      socket.emit('invalid peer id');
       return;
     }
-
-    console.log(`[Websocket] Retry signal: ${id} -> ${peerId}`);
+    if (!sessions.has(peerId)) {
+      socket.emit('peer not exists');
+      return;
+    }
     sessions.get(peerId)?.emit('retry', id);
+    console.log(`[Websocket] Retry signal: ${id} -> ${peerId}`);
   });
-  socket.on('done', (peerId: string): void => {
+  socket.on('progress', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
+      socket.emit('invalid peer id');
       return;
     }
-
-    console.log(`[Websocket] Done signal: ${id} -> ${peerId}`);
-    sessions.get(peerId)?.emit('done', id);
+    if (!sessions.has(peerId)) {
+      socket.emit('peer not exists');
+      return;
+    }
+    sessions.get(peerId)?.emit('progress', id, data);
+    console.log(`[Websocket] Progress signal: ${id} -> ${peerId}`);
   });
 
   socket.emit('assign', id);
