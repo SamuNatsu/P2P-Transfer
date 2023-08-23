@@ -98,6 +98,14 @@ io.on('connection', (socket: Socket): void => {
     sessions.get(peerId)?.emit('candidate', id, data);
   });
 
+  socket.on('retry', (peerId: string): void => {
+    if (typeof peerId !== 'string') {
+      return;
+    }
+
+    console.log(`[Websocket] Retry signal: ${id} -> ${peerId}`);
+    sessions.get(peerId)?.emit('retry', id);
+  });
   socket.on('done', (peerId: string): void => {
     if (typeof peerId !== 'string') {
       return;
