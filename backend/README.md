@@ -5,6 +5,7 @@
 ```txt
 SendPeer            SignalServer            RecvPeer
  *                   |                       *            Websocket conneccted
+ |                   |                       |
  |      assign       |        assign         |
  |<------------------+---------------------->|            Assign peer ID for each peer
  |                   |                       |
@@ -26,8 +27,6 @@ SendPeer            SignalServer            RecvPeer
  |       retry       |         retry         |   |
  +- - - - - - - - - >+- - - - - - - - - - - >+- -+        SendPeer may fail to select candidate, tell RecvPeer retry
  |                   |                       |
- |     progress      |       progress        |
- |<==================+<======================+            RecvPeer send progress
  |                   |                       |
  x                   |                       x            Websocket disconnected when done
 ```
@@ -51,8 +50,6 @@ SendPeer            SignalServer            RecvPeer
 | candidate       | Recv/Send | Recv/Send | string, any |
 +-----------------+-----------+-----------+-------------+
 | retry           | Send      | Recv      | string      |
-+-----------------+-----------+-----------+-------------+
-| progress        | Recv      | Send      | string, any |
 +-----------------+-----------+-----------+-------------+
 | invalid peer id | Signal    | Recv/Send | (None)      |
 +-----------------+-----------+-----------+-------------+

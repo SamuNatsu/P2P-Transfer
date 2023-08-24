@@ -130,18 +130,6 @@ io.on('connection', (socket: Socket): void => {
     sessions.get(peerId)?.emit('retry', id);
     console.log(`[Websocket] Retry signal: ${id} -> ${peerId}`);
   });
-  socket.on('progress', (peerId: string, data: any): void => {
-    if (typeof peerId !== 'string') {
-      socket.emit('invalid peer id');
-      return;
-    }
-    if (!sessions.has(peerId)) {
-      socket.emit('peer not exists');
-      return;
-    }
-    sessions.get(peerId)?.emit('progress', id, data);
-    console.log(`[Websocket] Progress signal: ${id} -> ${peerId}`);
-  });
 
   socket.emit('assign', id);
 });
