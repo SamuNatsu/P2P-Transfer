@@ -50,6 +50,8 @@
     "webrtc_conn": "无法建立 P2P 连接",
     "signal_conn": "无法连接信令服务器",
     "signal_disconn": "与信令服务器意外断开",
-    "data_ch": "数据传输出错"
+    "data_ch": "数据传输出错",
+    "invalid_peer": "对等方 ID 无效",
+    "peer_not_exists": "对等方 ID 不存在"
   }
 }

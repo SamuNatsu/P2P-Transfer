@@ -50,6 +50,8 @@
     "webrtc_conn": "Fail to connect to peer",
     "signal_conn": "Fail to connect to signal server",
     "signal_disconn": "Unexpected disconnection from signal server",
-    "data_ch": "Data transfer error"
+    "data_ch": "Data transfer error",
+    "invalid_peer": "Invalid peer ID",
+    "peer_not_exists": "Peer ID not exists"
   }
 }

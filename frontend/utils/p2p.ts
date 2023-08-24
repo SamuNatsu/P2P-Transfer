@@ -8,7 +8,9 @@ export enum P2PErrorType {
   WebRTCConnectError,
   SignalServerConnectError,
   SignalServerDisconnectError,
-  DataChannelError
+  DataChannelError,
+  InvalidPeerID,
+  PeerNotExists
 }
 
 /* Constants */
@@ -47,6 +49,14 @@ export function startSendFile(
 
   socket.on('connect_error', (): void => {
     cbError(P2PErrorType.SignalServerConnectError);
+  });
+  socket.on('invalid peer id', (): void => {
+    cbError(P2PErrorType.InvalidPeerID);
+    socket.disconnect();
+  });
+  socket.on('peer not exists', (): void => {
+    cbError(P2PErrorType.PeerNotExists);
+    socket.disconnect();
   });
   socket.on('disconnect', (): void => {
     if (done) {
@@ -99,18 +109,6 @@ export function startSendFile(
     await peerConn.addIceCandidate(data);
   });
 
-  socket.on('progress', (inPeerId: string, recvBytes: number): void => {
-    if (peerId !== inPeerId) {
-      return;
-    }
-    cbProgress(recvBytes);
-    if (recvBytes >= file.size) {
-      done = true;
-      cbDone();
-      socket.disconnect();
-    }
-  });
-
   peerConn.addEventListener('icecandidate', (ev: RTCPeerConnectionIceEvent) => {
     if (ev.candidate !== null) {
       socket.emit('candidate', peerId, ev.candidate);
@@ -145,6 +143,7 @@ export function startSendFile(
       offset += len;
     }
 
+    dataCh.binaryType = 'arraybuffer';
     dataCh.addEventListener('error', (): void => {
       if (done) {
         return;
@@ -152,6 +151,17 @@ export function startSendFile(
       cbError(P2PErrorType.DataChannelError);
     });
     dataCh.addEventListener('open', cbStart);
+    dataCh.addEventListener('message', (ev: MessageEvent<ArrayBuffer>): void => {
+      const view: DataView = new DataView(ev.data);
+      const recvBytes: number = Number(view.getBigUint64(0));
+
+      cbProgress(recvBytes);
+      if (recvBytes >= file.size && !done) {
+        done = true;
+        cbDone();
+        socket.disconnect();
+      }
+    });
 
     reader.addEventListener('load', (): void => {
       const result: ArrayBuffer = reader.result as ArrayBuffer;
@@ -162,7 +172,7 @@ export function startSendFile(
       wrapper.set(new Uint8Array(result), 4);
       dataCh.send(wrapper);
 
-      ++order;
+      order++;
       readSlice();
     });
 
@@ -194,6 +204,8 @@ export function startRecvFile(
 
   let selfId: string | null = null;
   let totSize: number = 0;
+  let tPerNum: number = 1;
+  let tNum: number = 0;
   let done: boolean = false;
 
   const socket: Socket = io({ reconnection: false });
@@ -206,6 +218,14 @@ export function startRecvFile(
 
   socket.on('connect_error', (): void => {
     cbError(P2PErrorType.SignalServerConnectError);
+  });
+  socket.on('invalid peer id', (): void => {
+    cbError(P2PErrorType.InvalidPeerID);
+    socket.disconnect();
+  });
+  socket.on('peer not exists', (): void => {
+    cbError(P2PErrorType.PeerNotExists);
+    socket.disconnect();
   });
   socket.on('disconnect', (): void => {
     if (done) {
@@ -230,6 +250,7 @@ export function startRecvFile(
       return;
     }
     totSize = data.fileSize;
+    tPerNum = Math.ceil(totSize / PACK_SIZE / 1000);
     cbInfo(data.fileName, data.fileSize);
   });
 
@@ -274,25 +295,29 @@ export function startRecvFile(
   });
 
   dataCh.binaryType = 'arraybuffer';
-  dataCh.onopen = (): void => {
+  dataCh.addEventListener('open', (): void => {
     cbDataOpen();
-  };
-  dataCh.onerror = (): void => {
+  });
+  dataCh.addEventListener('error', (): void => {
     if (done) {
       return;
     }
     cbError(P2PErrorType.DataChannelError);
-  };
-  dataCh.onmessage = (ev: MessageEvent<any>): void => {
+  });
+  dataCh.addEventListener('message', (ev: MessageEvent<ArrayBuffer>): void => {
     const recvBytes: number = cbMessage(ev.data);
 
-    socket.emit('progress', peerId, recvBytes);
+    tNum++;
+    if (tNum % tPerNum === 0) {
+      dataCh.send(new BigUint64Array(recvBytes));
+    }
     if (recvBytes >= totSize) {
       done = true;
+      dataCh.send(new BigUint64Array(recvBytes));
       cbDone();
       socket.disconnect();
     }
-  };
+  });
 
   socket.emit('request', peerId);
 

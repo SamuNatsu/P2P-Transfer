@@ -157,7 +157,9 @@ async function sendFile(): Promise<void> {
       }, 500);
     },
     (recvSize: number): void => {
-      refs.sendSize = recvSize;
+      if (recvSize > refs.sendSize) {
+        refs.sendSize = recvSize;
+      }
     },
     (): void => {
       refs.status = Status.Finished;
