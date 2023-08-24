@@ -14,6 +14,9 @@ export default defineNuxtConfig({
     strategy: 'prefix_except_default'
   },
   pages: true,
+  plugins: [
+    '~/plugins/vue3-notification.client.ts'
+  ],
   vite: {
     server: {
       proxy: {

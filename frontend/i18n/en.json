@@ -25,6 +25,7 @@
     "ins_speed": "Ins Speed: "
   },
   "recv": {
+    "open_outside": "Please use external browser",
     "self_id": "Host ID: ",
     "peer_id": "Peer ID: ",
     "file_name": "File Name: ",

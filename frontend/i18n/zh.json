@@ -25,6 +25,7 @@
     "ins_speed": "瞬时速度："
   },
   "recv": {
+    "open_outside": "请使用外置浏览器打开",
     "self_id": "本机 ID：",
     "peer_id": "对等端 ID：",
     "file_name": "文件名：",

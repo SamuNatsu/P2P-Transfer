@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { Socket } from 'socket.io-client';
 import { P2PErrorType } from '../utils/p2p';
+import { isInternalBrowser } from '../utils/user_agent.';
 
 /* Types */
 enum Status {
@@ -33,6 +34,7 @@ useHeadSafe({
 
 /* Reactive */
 const refs = reactive({
+  showLayer: false,
   status: Status.Idle,
   selfId: '',
   peerId: '',
@@ -56,6 +58,11 @@ let start: () => void;
 onMounted(async (): Promise<void> => {
   if (Object.keys(route.query).length === 0) {
     router.push('/');
+    return;
+  }
+
+  if (isInternalBrowser()) {
+    refs.showLayer = true;
     return;
   }
 
@@ -170,11 +177,9 @@ onMounted(async (): Promise<void> => {
 
 <template>
   <div class="bg-gray-50 fixed flex flex-col gap-12 items-center inset-0 justify-center">
-    <header class="flex gap-4 items-center select-none">
-      <img class="h-16 w-16" draggable="false" src="/favicon.svg" />
-      <h1 class="font-bold font-smiley text-4xl">P2P Transfer</h1>
-    </header>
+    <AppHeader/>
     <ClientOnly>
+      <BlockLayer v-if="refs.showLayer"/>
       <main class="flex flex-col">
         <p><strong>{{ $t('recv.self_id') }}</strong>{{ refs.selfId }}</p>
         <p><strong>{{ $t('recv.peer_id') }}</strong>{{ refs.peerId }}</p>

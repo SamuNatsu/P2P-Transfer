@@ -17,11 +17,12 @@ useServerHeadSafe({
     }
   ]
 });
-
-const lp = useLocalePath();
 </script>
 
 <template>
+  <ClientOnly>
+    <notifications position="top center"/>
+  </ClientOnly>
   <NuxtPage/>
   <footer class="absolute bottom-4 flex font-smiley gap-4 items-center justify-center w-full">
     <NuxtLinkLocale to="/">

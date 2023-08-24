@@ -19,6 +19,7 @@
     "nuxt": "^3.6.5"
   },
   "dependencies": {
+    "@kyvg/vue3-notification": "^3.0.1",
     "qrcode": "^1.5.3",
     "socket.io-client": "^4.7.2",
     "streamsaver": "^2.0.6"

@@ -151,17 +151,20 @@ export function startSendFile(
       cbError(P2PErrorType.DataChannelError);
     });
     dataCh.addEventListener('open', cbStart);
-    dataCh.addEventListener('message', (ev: MessageEvent<ArrayBuffer>): void => {
-      const view: DataView = new DataView(ev.data);
-      const recvBytes: number = Number(view.getBigUint64(0));
+    dataCh.addEventListener(
+      'message',
+      (ev: MessageEvent<ArrayBuffer>): void => {
+        const view: DataView = new DataView(ev.data);
+        const recvBytes: number = Number(view.getBigUint64(0));
 
-      cbProgress(recvBytes);
-      if (recvBytes >= file.size && !done) {
-        done = true;
-        cbDone();
-        socket.disconnect();
+        cbProgress(recvBytes);
+        if (recvBytes >= file.size && !done) {
+          done = true;
+          cbDone();
+          socket.disconnect();
+        }
       }
-    });
+    );
 
     reader.addEventListener('load', (): void => {
       const result: ArrayBuffer = reader.result as ArrayBuffer;
@@ -284,10 +287,6 @@ export function startRecvFile(
       socket.emit('candidate', peerId, ev.candidate);
     }
   });
-
-  peerConn.onicecandidate = (ev: RTCPeerConnectionIceEvent): void => {
-    socket.emit('candidate', peerId, ev.candidate);
-  };
   peerConn.addEventListener('connectionstatechange', (): void => {
     if (peerConn.connectionState === 'failed') {
       socket.disconnect();
@@ -298,10 +297,11 @@ export function startRecvFile(
   dataCh.addEventListener('open', (): void => {
     cbDataOpen();
   });
-  dataCh.addEventListener('error', (): void => {
+  dataCh.addEventListener('error', (ev): void => {
     if (done) {
       return;
     }
+    console.error(ev);
     cbError(P2PErrorType.DataChannelError);
   });
   dataCh.addEventListener('message', (ev: MessageEvent<ArrayBuffer>): void => {
@@ -309,11 +309,21 @@ export function startRecvFile(
 
     tNum++;
     if (tNum % tPerNum === 0) {
-      dataCh.send(new BigUint64Array(recvBytes));
+      const buffer: Uint8Array = new Uint8Array(8);
+      const view: DataView = new DataView(buffer.buffer);
+
+      view.setBigUint64(0, BigInt(recvBytes));
+      dataCh.send(buffer);
     }
     if (recvBytes >= totSize) {
       done = true;
-      dataCh.send(new BigUint64Array(recvBytes));
+
+      const buffer: Uint8Array = new Uint8Array(8);
+      const view: DataView = new DataView(buffer.buffer);
+
+      view.setBigUint64(0, BigInt(recvBytes));
+      dataCh.send(buffer);
+
       cbDone();
       socket.disconnect();
     }

@@ -2,6 +2,7 @@
 import QRCode from 'qrcode';
 import { P2PErrorType } from '../utils/p2p';
 import { Socket } from 'socket.io-client';
+import { notify } from '@kyvg/vue3-notification';
 
 /* Types */
 enum Status {
@@ -38,7 +39,7 @@ const refs = reactive({
   fileSize: 0,
   sendSize: 0,
   link: '',
-  QRCodeData: '/imgs/cloud-xmark.svg',
+  QRCodeData: null as null | string,
   avgSpeed: 0,
   insSpeed: 0,
   error: null as null | string
@@ -70,7 +71,7 @@ function selectFile(ev: Event): void {
   refs.fileSize = file.size;
   refs.sendSize = 0;
   refs.link = '';
-  refs.QRCodeData = '/imgs/cloud-xmark.svg';
+  refs.QRCodeData = null;
   refs.avgSpeed = 0;
   refs.insSpeed = 0;
   refs.error = null;
@@ -79,10 +80,16 @@ function copyLink(): void {
   window.navigator.clipboard
     .writeText(refs.link)
     .then((): void => {
-      alert('OK');
+      notify({
+        title: 'OK',
+        type: 'success'
+      });
     })
     .catch((): void => {
-      alert('Fail');
+      notify({
+        title: 'FAIL',
+        type: 'error'
+      });
     });
 }
 async function sendFile(): Promise<void> {
@@ -174,10 +181,7 @@ async function sendFile(): Promise<void> {
 
 <template>
   <div class="bg-gray-50 fixed flex flex-col gap-12 items-center inset-0 justify-center">
-    <header class="flex gap-4 items-center select-none">
-      <img class="h-16 w-16" draggable="false" src="/favicon.svg" />
-      <h1 class="font-bold font-smiley text-4xl">P2P Transfer</h1>
-    </header>
+    <AppHeader/>
     <main class="flex flex-col items-center gap-4">
       <label class="cursor-pointer bg-white border-2 border-green-500 font-bold px-4 py-1 rounded-3xl select-none transition-colors hover:bg-green-500 hover:text-white" for="file-input">
         <span>{{ $t('index.select_file') }}</span>
@@ -185,12 +189,12 @@ async function sendFile(): Promise<void> {
       </label>
       <button @click="sendFile" class="bg-white border-2 border-blue-500 font-bold px-4 py-1 rounded-3xl select-none transition-colors disabled:bg-white disabled:cursor-not-allowed disabled:opacity-50 disabled:text-black hover:bg-blue-500 hover:text-white" :disabled="refs.fileName === null || refs.status !== Status.Idle">{{ sendBtnTxt }}</button>
       <div v-if="refs.status !== Status.Idle" class="flex flex-col gap-4 items-center md:flex-row">
-        <img class="border-2 border-dashed border-gray-300 h-[200px] w-[200px]" draggable="false" :src="(refs.QRCodeData as string)"/>
+        <img v-if="refs.QRCodeData" class="border-2 border-dashed border-gray-300 h-[200px] w-[200px]" draggable="false" :src="refs.QRCodeData"/>
         <div class="flex flex-col">
-          <button @click="copyLink" class="bg-white border border-yellow-500 my-2 px-4 rounded-3xl select-none self-center transition-colors hover:bg-yellow-500 hover:text-white">
+          <button v-if="refs.QRCodeData" @click="copyLink" class="bg-white border border-yellow-500 my-2 px-4 rounded-3xl select-none self-center transition-colors hover:bg-yellow-500 hover:text-white">
             {{ $t('index.click_to_copy') }}
           </button>
-          <p>
+          <p v-if="refs.QRCodeData">
             <strong>{{ $t('index.link') }}</strong>
             <span>{{ refs.link }}</span>
           </p>
@@ -206,8 +210,8 @@ async function sendFile(): Promise<void> {
             <span v-else-if="refs.status === Status.Finished" class="text-green-500">{{ $t('index.status.finished') }}</span>
             <span v-else class="text-red-500">{{ $t('index.status.error') }}</span>
           </p>
-          <p><strong>{{ $t('recv.self_id') }}</strong>{{ refs.selfId }}</p>
-          <p><strong>{{ $t('recv.peer_id') }}</strong>{{ refs.peerId }}</p>
+          <p v-if="refs.QRCodeData"><strong>{{ $t('recv.self_id') }}</strong>{{ refs.selfId }}</p>
+          <p v-if="refs.QRCodeData"><strong>{{ $t('recv.peer_id') }}</strong>{{ refs.peerId }}</p>
           <template v-if="refs.status === Status.Transfering || refs.status === Status.Finished">
             <p><strong>{{ $t('index.progress') }}</strong>{{ (refs.sendSize / refs.fileSize * 100).toFixed(1) }}%</p>
             <p><strong>{{ $t('recv.avg_speed') }}</strong>{{ avgSpeedTxt }}</p>
