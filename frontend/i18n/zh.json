@@ -3,56 +3,45 @@
     "title": "P2P 文件传输",
     "description": "一个 P2P 传输网页应用"
   },
-  "index": {
+  "button": {
     "select_file": "选择文件",
     "send": "发送",
+    "abort": "中止",
     "click_to_copy": "点击复制链接",
-    "link": "链接：",
-    "file_size": "文件大小：",
-    "self_id": "本机 ID：",
-    "peer_id": "对等端 ID：",
-    "status": {
-      "_": "状态：",
-      "idle": "空闲",
-      "waiting_peer": "等待对等端连接",
-      "waiting_accept": "等待对等端同意下载",
-      "transfering": "传输中",
-      "finished": "完成",
-      "error": "错误"
-    },
-    "progress": "进度：",
-    "avg_speed": "平均速度：",
-    "ins_speed": "瞬时速度："
+    "start_download": "开始下载"
   },
-  "recv": {
-    "open_outside": "请使用外置浏览器打开",
-    "self_id": "本机 ID：",
-    "peer_id": "对等端 ID：",
+  "ui": {
     "file_name": "文件名：",
     "file_size": "文件大小：",
-    "status": {
-      "_": "状态：",
-      "idle": "空闲",
-      "requesting": "正在请求元数据",
-      "waiting": "等待开始",
-      "connecting": "正在建立 P2P 通道",
-      "transfering": "传输中",
-      "finished": "完成",
-      "error": "错误"
-    },
+    "self_id": "本机 ID：",
+    "peer_id": "对等端 ID：",
     "progress": "进度：",
     "avg_speed": "平均速度：",
     "ins_speed": "瞬时速度：",
-    "start_download": "开始下载"
+    "open_outside": "请使用外置浏览器打开",
+    "copy_ok": "已复制",
+    "copy_fail": "复制失败",
+    "home": "主页",
+    "about": "关于"
+  },
+  "status": {
+    "_": "状态：",
+    "idle": "空闲",
+    "conn_signal": "正在连接信令服务器",
+    "wait_peer": "等待对等端连接",
+    "wait_accept": "等待对等端同意下载",
+    "transfer": "传输中",
+    "finish": "完成",
+    "error": "错误"
   },
   "error": {
-    "qrcode_gen": "无法生成分享二维码",
     "webrtc_disabled": "WebRTC 被浏览器禁用",
-    "webrtc_conn": "无法建立 P2P 连接",
     "signal_conn": "无法连接信令服务器",
     "signal_disconn": "与信令服务器意外断开",
+    "webrtc_conn": "无法建立 P2P 连接",
     "data_ch": "数据传输出错",
     "invalid_peer": "对等方 ID 无效",
-    "peer_not_exists": "对等方 ID 不存在"
+    "peer_not_exists": "对等方不存在",
+    "abort": "传输被用户中止"
   }
 }

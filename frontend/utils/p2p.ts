@@ -14,8 +14,8 @@ export enum P2PErrorType {
 }
 
 /* Constants */
-const BUFF_SIZE: number = 4194304;
-const PACK_SIZE: number = 16384;
+export const BUFF_SIZE: number = 4194304;
+export const PACK_SIZE: number = 16384;
 
 /* Start send file */
 export function startSendFile(

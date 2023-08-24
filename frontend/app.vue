@@ -1,36 +1,13 @@
-<script lang="ts" setup>
-/* Server SEO */
-useServerSeoMeta({
-  title: 'P2P Transfer',
-  description: 'A P2P Transfering Web App',
-  ogTitle: 'P2P Transer',
-  ogDescription: 'A P2P Transfering Web App',
-  ogType: 'website',
-  ogImage: '/favicon.svg'
-});
-useServerHeadSafe({
-  link: [
-    {
-      rel: 'icon',
-      type: 'image/svg+xml',
-      href: '/favicon.svg'
-    }
-  ]
-});
-</script>
-
 <template>
   <ClientOnly>
     <notifications position="top center"/>
   </ClientOnly>
-  <NuxtPage/>
-  <footer class="absolute bottom-4 flex font-smiley gap-4 items-center justify-center w-full">
-    <NuxtLinkLocale to="/">
-      <span class="transition-colors hover:text-blue-500">Home</span>
-    </NuxtLinkLocale>
-    <NuxtLinkLocale to="/about">
-      <span class="transition-colors hover:text-blue-500">About</span>
-    </NuxtLinkLocale>
-    <a class="transition-colors hover:text-blue-500" href="https://github.com/SamuNatsu/P2P-Transfer" target="_blank">Github</a>
-  </footer>
+  <div class="bg-gray-50 fixed flex flex-col gap-12 items-center inset-0 justify-center">
+    <AppLangSwitch/>
+    <AppHeader/>
+    <main class="flex flex-col items-center gap-4">
+      <NuxtPage/>
+    </main>
+    <AppFooter/>
+  </div>
 </template>

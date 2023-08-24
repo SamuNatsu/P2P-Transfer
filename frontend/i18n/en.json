@@ -3,55 +3,45 @@
     "title": "P2P Transder",
     "description": "A P2P File Transfer Web App"
   },
-  "index": {
+  "button": {
     "select_file": "Select File",
     "send": "Send",
+    "abort": "Abort",
     "click_to_copy": "Click to Copy Link",
-    "link": "Link: ",
-    "file_size": "File Size: ",
-    "self_id": "Host ID: ",
-    "peer_id": "Peer ID: ",
-    "status": {
-      "_": "Status: ",
-      "idle": "Idle",
-      "waiting_peer": "Waiting peero",
-      "waiting_accept": "Waiting accept",
-      "transfering": "Transfering",
-      "finished": "Finished",
-      "error": "Error"
-    },
-    "progress": "Progress: ",
-    "avg_speed": "Avg Speed: ",
-    "ins_speed": "Ins Speed: "
+    "start_download": "Start Download"
   },
-  "recv": {
-    "open_outside": "Please use external browser",
-    "self_id": "Host ID: ",
-    "peer_id": "Peer ID: ",
+  "ui": {
     "file_name": "File Name: ",
     "file_size": "File Size: ",
-    "status": {
-      "_": "Status: ",
-      "idle": "Idle",
-      "requesting": "Requesting meta",
-      "waiting": "Waiting for start",
-      "connecting": "Constructing P2P channel",
-      "transfering": "Transfering",
-      "finished": "Finished",
-      "error": "Error"
-    },
+    "self_id": "Host ID: ",
+    "peer_id": "Peer ID: ",
     "progress": "Progress: ",
     "avg_speed": "Avg Speed: ",
     "ins_speed": "Ins Speed: ",
-    "start_download": "Start Download"
+    "open_outside": "Please use external browser",
+    "copy_ok": "Copied",
+    "copy_fail": "Copy failed",
+    "home": "Home",
+    "about": "About"
+  },
+  "status": {
+    "_": "Status: ",
+    "idle": "Idle",
+    "conn_signal": "Connecting signal server",
+    "wait_peer": "Waiting peer",
+    "wait_accept": "Waiting accept",
+    "negotiate": "Negotiating",
+    "transfer": "Transfering",
+    "finish": "Finished",
+    "error": "Error"
   },
   "error": {
-    "qrcode_gen": "Fail to generate QR code",
     "webrtc_disabled": "WebRTC is disabled by browser",
-    "webrtc_conn": "Fail to connect to peer",
     "signal_conn": "Fail to connect to signal server",
     "signal_disconn": "Unexpected disconnection from signal server",
+    "webrtc_conn": "Fail to construct P2P connection",
     "data_ch": "Data transfer error",
+    "abort": "Abort by user",
     "invalid_peer": "Invalid peer ID",
     "peer_not_exists": "Peer ID not exists"
   }

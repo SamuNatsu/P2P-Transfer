@@ -99,7 +99,7 @@ onMounted(async (): Promise<void> => {
           refs.error = t('error.signal_conn');
           break;
         case P2PErrorType.SignalServerDisconnectError:
-          refs.error = t('error_signal_disconn');
+          refs.error = t('error.signal_disconn');
           break;
         case P2PErrorType.WebRTCConnectError:
           refs.error = t('error.webrtc_conn');
