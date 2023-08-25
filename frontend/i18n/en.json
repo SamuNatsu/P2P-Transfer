@@ -1,6 +1,7 @@
 {
   "seo": {
     "title": "P2P Transder",
+    "about_title": "About {'|'} P2P Transder",
     "description": "A P2P File Transfer Web App"
   },
   "button": {
@@ -38,11 +39,11 @@
   "error": {
     "webrtc_disabled": "WebRTC is disabled by browser",
     "signal_conn": "Fail to connect to signal server",
+    "not_exists": "Peer ID not exists",
+    "paired": "Peer ID has been paired",
     "signal_disconn": "Unexpected disconnection from signal server",
     "webrtc_conn": "Fail to construct P2P connection",
     "data_ch": "Data transfer error",
-    "abort": "Abort by user",
-    "invalid_peer": "Invalid peer ID",
-    "peer_not_exists": "Peer ID not exists"
+    "abort": "Abort by user"
   }
 }

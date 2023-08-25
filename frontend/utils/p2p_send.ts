@@ -1,4 +1,4 @@
-/// P2P send module
+/// P2P send utils
 import { Socket, io } from 'socket.io-client';
 import serverList from '~/assets/ice_servers.json';
 import { BUFF_SIZE, PACK_SIZE } from './p2p';

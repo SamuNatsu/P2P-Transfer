@@ -7,41 +7,63 @@ enum Mode {
 
 /* Inject */
 const route = useRoute();
-const { t, locale } = useI18n();
 
-/* Seo */
-useSeoMeta({
-  title: t('seo.title'),
-  description: t('seo.description'),
-  ogTitle: t('seo.title'),
-  ogDescription: t('seo.description'),
-  ogType: 'website',
-  ogImage: '/favicon.svg'
-});
-useHeadSafe({
-  htmlAttrs: {
-    lang: locale.value
-  },
-  link: [
-    {
-      rel: 'icon',
-      type: 'image/svg+xml',
-      href: '/favicon.svg'
-    }
-  ]
+/* Page meta */
+definePageMeta({
+  title: 'seo.title',
+  description: 'seo.description'
 });
 
 /* Reactive */
-const mode: Ref<null | Mode> = ref(null);
+const refs = reactive({
+  mode: null as null | Mode,
+  peerId: ''
+});
+const recvRef: Ref = ref();
+
+function init() {
+  if (recvRef.value === undefined) {
+    return;
+  }
+  recvRef.value.init();
+}
 
 /* Life cycle */
 onMounted((): void => {
   const queryKeys: string[] = Object.keys(route.query);
-  mode.value = queryKeys.length === 0 ? Mode.Send : Mode.Receive;
+
+  if (queryKeys.length === 0) {
+    refs.mode = Mode.Send;
+  } else {
+    refs.peerId = queryKeys[0];
+    refs.mode = Mode.Receive;
+  }
 });
 </script>
 
 <template>
-  <AppReceiver v-if="mode === Mode.Receive"/>
-  <AppSender v-else-if="mode === Mode.Send"/>
+  <main class="flex flex-col items-center gap-4">
+    <BlockLayer v-if="refs.mode === Mode.Receive && isInternalBrowser()"/>
+    <Transition mode="out-in" @after-enter="init">
+      <LazyReceiver v-if="refs.mode === Mode.Receive" :peer-id="refs.peerId" ref="recvRef"/>
+      <LazySender v-else-if="refs.mode === Mode.Send"/>
+      <div
+        v-else
+        class="absolute animate-spin border-4 border-blue-500 border-r-transparent h-12 w-12 rounded-full">
+      </div>
+    </Transition>
+  </main>
 </template>
+
+<style scoped>
+.v-move,
+.v-enter-active,
+.v-leave-active {
+  transition: opacity .2s;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+</style>

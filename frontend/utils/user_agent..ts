@@ -6,6 +6,7 @@ export function isInternalBrowser(): boolean {
 
   return (
     /micromessenger|alipay|taurusapp|dingtalk/i.test(UA) ||
+    /(?<!m)qq(?!browser)/i.test(UA) ||
     (window as any)?.__wxjs_environment == 'miniprogram'
   );
 }

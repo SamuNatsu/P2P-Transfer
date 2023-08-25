@@ -51,8 +51,8 @@ SendPeer            SignalServer            RecvPeer
 +-----------------+-----------+-----------+-------------+
 | retry           | Send      | Recv      | string      |
 +-----------------+-----------+-----------+-------------+
-| invalid peer id | Signal    | Recv/Send | (None)      |
+| not_exists      | Signal    | Recv/Send | (None)      |
 +-----------------+-----------+-----------+-------------+
-| peer not exists | Signal    | Recv/Send | (None)      |
+| paired          | Signal    | Recv/Send | (None)      |
 +-----------------+-----------+-----------+-------------+
 ```

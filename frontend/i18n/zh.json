@@ -1,6 +1,7 @@
 {
   "seo": {
     "title": "P2P 文件传输",
+    "about_title": "关于 {'|'} P2P 文件传输",
     "description": "一个 P2P 传输网页应用"
   },
   "button": {
@@ -30,6 +31,7 @@
     "conn_signal": "正在连接信令服务器",
     "wait_peer": "等待对等端连接",
     "wait_accept": "等待对等端同意下载",
+    "negotiate": "正在协商 P2P 连接",
     "transfer": "传输中",
     "finish": "完成",
     "error": "错误"
@@ -37,11 +39,11 @@
   "error": {
     "webrtc_disabled": "WebRTC 被浏览器禁用",
     "signal_conn": "无法连接信令服务器",
+    "not_exists": "对等方 ID 不存在",
+    "paired": "对等方已配对",
     "signal_disconn": "与信令服务器意外断开",
     "webrtc_conn": "无法建立 P2P 连接",
     "data_ch": "数据传输出错",
-    "invalid_peer": "对等方 ID 无效",
-    "peer_not_exists": "对等方不存在",
     "abort": "传输被用户中止"
   }
 }

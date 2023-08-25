@@ -32,6 +32,10 @@ function copyLink(): void {
 <template>
   <div class="flex flex-col gap-2 items-center">
     <img class="border-4 border-dashed h-[160px] w-[160px]" :src="dataUrl"/>
-    <AppButton @click="copyLink" class="border-yellow-400 hover:bg-yellow-400">{{ $t('button.click_to_copy') }}</AppButton>
+    <AppButton
+      @click="copyLink"
+      class="border-yellow-400 hover:bg-yellow-400">
+      {{ $t('button.click_to_copy') }}
+    </AppButton>
   </div>
 </template>

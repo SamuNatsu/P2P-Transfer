@@ -16,7 +16,7 @@ const availableLocales = computed(() => {
 </script>
 
 <template>
-  <div class="fixed flex font-smiley items-center justify-center top-2 w-full">
+  <div class="flex font-smiley items-center justify-center">
     <NuxtLink
       v-for="locale in availableLocales"
       :key="locale.code"

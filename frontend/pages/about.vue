@@ -1,17 +1,35 @@
 <script lang="ts" setup>
 /* Inject */
 const { t } = useI18n({ useScope: 'local' });
+
+/* Page meta */
+definePageMeta({
+  title: 'seo.about_title',
+  description: 'seo.description'
+});
 </script>
 
 <template>
-  <p class="font-smiley text-xl">
-    <b>{{ t('inspired_by') }}</b>
-    <a class="text-blue-500 transition-colors hover:text-red-500" href="https://transfer.zip/" target="_blank">https://transfer.zip/</a>
-  </p>
-  <p class="font-smiley text-xl">
+  <main class="flex flex-col items-center gap-4">
+    <p class="font-smiley text-xl">
+      <b>{{ t('inspired_by') }}</b>
+      <NuxtLink
+        class="text-blue-500 transition-colors hover:text-red-500"
+        target="_blank"
+        to="https://transfer.zip/">
+        transfer.zip
+      </NuxtLink>
+    </p>
+    <p class="font-smiley text-xl">
     <b>{{ t('made_with_love_by') }}</b>
-    <a class="text-blue-500 transition-colors hover:text-red-500" href="https://github.com/SamuNatsu" target="_blank">SNRainiar</a>
-  </p>
+      <NuxtLink
+        class="text-blue-500 transition-colors hover:text-red-500"
+        target="_blank"
+        to="https://github.com/SamuNatsu/">
+        SNRainiar
+      </NuxtLink>
+    </p>
+  </main>
 </template>
 
 <i18n lang="json">

@@ -24,6 +24,7 @@ export default defineNuxtConfig({
         name: '中文'
       }
     ],
+    skipSettingLocaleOnNavigate: true,
     strategy: 'prefix_except_default'
   },
   pages: true,

@@ -1,13 +1,38 @@
+<script setup lang="ts">
+const { finalizePendingLocaleChange } = useI18n()
+
+async function onBeforeEnter(): Promise<void> {
+  await finalizePendingLocaleChange();
+};
+</script>
+
 <template>
-  <ClientOnly>
-    <notifications position="top center"/>
-  </ClientOnly>
-  <div class="bg-gray-50 fixed flex flex-col gap-12 items-center inset-0 justify-center">
-    <AppLangSwitch/>
-    <AppHeader/>
-    <main class="flex flex-col items-center gap-4">
-      <NuxtPage/>
-    </main>
+  <NuxtLayout>
+    <ClientOnly>
+      <notifications position="top center"/>
+    </ClientOnly>
+    <div
+      class="bg-gray-50 fixed flex flex-col gap-12 inset-0 items-center justify-center">
+      <AppHeader/>
+      <NuxtPage
+        :transition="{
+          name: 'page',
+          mode: 'out-in',
+          onBeforeEnter
+        }"/>
+    </div>
     <AppFooter/>
-  </div>
+  </NuxtLayout>
 </template>
+
+<style>
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.4s;
+}
+
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+}
+</style>

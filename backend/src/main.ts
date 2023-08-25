@@ -27,6 +27,7 @@ const server: http.Server | https.Server = SSL
 /* Socket.io server */
 const io: Server = new Server(server);
 const sessions: Map<string, Socket> = new Map();
+const pairs: Map<string, string> = new Map();
 
 const nanoid: (size?: number) => string = customAlphabet(
   '346789ABCDEFGHJKLMNPQRTUVWXYabcdefghijkmnpqrtwxyz'
@@ -53,28 +54,35 @@ io.on('connection', (socket: Socket): void => {
   });
   socket.on('disconnect', (reason: DisconnectReason): void => {
     sessions.delete(id);
+    pairs.delete(id);
     console.log(`[Websocket] Disconnected: ${id} (${reason})`);
   });
 
   socket.on('request', (peerId: string): void => {
     if (typeof peerId !== 'string') {
-      socket.emit('invalid peer id');
+      socket.disconnect(true);
       return;
     }
     if (!sessions.has(peerId)) {
-      socket.emit('peer not exists');
+      socket.emit('not_exists');
       return;
+    }
+    if (pairs.has(peerId) && pairs.get(peerId) !== id) {
+      socket.emit('paired');
+      return;
+    } else {
+      pairs.set(peerId, id);
     }
     sessions.get(peerId)?.emit('request', id);
     console.log(`[Websocket] Info request: ${id} -> ${peerId}`);
   });
   socket.on('response', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
-      socket.emit('invalid peer id');
+      socket.disconnect(true);
       return;
     }
     if (!sessions.has(peerId)) {
-      socket.emit('peer not exists');
+      socket.emit('not_exists');
       return;
     }
     sessions.get(peerId)?.emit('response', id, data);
@@ -83,11 +91,11 @@ io.on('connection', (socket: Socket): void => {
 
   socket.on('offer', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
-      socket.emit('invalid peer id');
+      socket.disconnect(true);
       return;
     }
     if (!sessions.has(peerId)) {
-      socket.emit('peer not exists');
+      socket.emit('not_exists');
       return;
     }
     sessions.get(peerId)?.emit('offer', id, data);
@@ -95,11 +103,11 @@ io.on('connection', (socket: Socket): void => {
   });
   socket.on('answer', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
-      socket.emit('invalid peer id');
+      socket.disconnect(true);
       return;
     }
     if (!sessions.has(peerId)) {
-      socket.emit('peer not exists');
+      socket.emit('not_exists');
       return;
     }
     sessions.get(peerId)?.emit('answer', id, data);
@@ -107,11 +115,11 @@ io.on('connection', (socket: Socket): void => {
   });
   socket.on('candidate', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
-      socket.emit('invalid peer id');
+      socket.disconnect(true);
       return;
     }
     if (!sessions.has(peerId)) {
-      socket.emit('peer not exists');
+      socket.emit('not_exists');
       return;
     }
     sessions.get(peerId)?.emit('candidate', id, data);
@@ -120,11 +128,11 @@ io.on('connection', (socket: Socket): void => {
 
   socket.on('retry', (peerId: string): void => {
     if (typeof peerId !== 'string') {
-      socket.emit('invalid peer id');
+      socket.disconnect(true);
       return;
     }
     if (!sessions.has(peerId)) {
-      socket.emit('peer not exists');
+      socket.emit('not_exists');
       return;
     }
     sessions.get(peerId)?.emit('retry', id);
