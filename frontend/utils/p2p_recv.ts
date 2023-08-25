@@ -43,6 +43,7 @@ export function startRecvService(
   let totSize: number = 0;
   let tPerNum: number = 1;
   let tNum: number = 0;
+  let retry: number = 0;
 
   cbReady(socket, peerConn);
 
@@ -108,8 +109,17 @@ export function startRecvService(
       socket.emit('candidate', peerId, ev.candidate);
     }
   });
-  peerConn.addEventListener('connectionstatechange', (): void => {
+  peerConn.addEventListener('connectionstatechange', async (): Promise<void> => {
     if (peerConn.connectionState === 'failed') {
+      if (retry < 5) {
+        const offer: RTCSessionDescriptionInit = await peerConn.createOffer({
+          iceRestart: true
+        });
+        await peerConn.setLocalDescription(offer);
+        socket.emit('offer', peerId, offer);
+        retry++;
+        return;
+      }
       cbError(RecvServiceError.WebRTCConnectFail);
       socket.disconnect();
     }
