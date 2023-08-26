@@ -4,23 +4,27 @@ import pkg from './package.json';
 /* Export config */
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  modules: ['@nuxtjs/i18n', '@nuxtjs/tailwindcss'],
+  modules: ['@nuxtjs/i18n', '@nuxtjs/tailwindcss', 'nuxt-svgo'],
   i18n: {
     defaultLocale: 'en',
-    detectBrowserLanguage: {},
+    detectBrowserLanguage: {
+      cookieKey: 'language',
+      redirectOn: 'all',
+      useCookie: true
+    },
     lazy: true,
     langDir: './i18n',
     locales: [
       {
         code: 'en',
-        iso: 'en-US',
         file: './en.json',
+        iso: 'en-US',
         name: 'English'
       },
       {
         code: 'zh',
-        iso: 'zh-CN',
         file: './zh.json',
+        iso: 'zh-CN',
         name: '中文'
       }
     ],
@@ -33,6 +37,9 @@ export default defineNuxtConfig({
     public: {
       version: pkg.version
     }
+  },
+  svgo: {
+    defaultImport: 'component'
   },
   vite: {
     server: {

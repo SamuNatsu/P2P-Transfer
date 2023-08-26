@@ -9,6 +9,8 @@
     "send": "发送",
     "abort": "中止",
     "click_to_copy": "点击复制链接",
+    "blob_mode": "Blob 下载",
+    "stream_mode": "流式下载",
     "start_download": "开始下载"
   },
   "ui": {
@@ -16,12 +18,13 @@
     "file_size": "文件大小：",
     "self_id": "本机 ID：",
     "peer_id": "对等端 ID：",
-    "progress": "进度：",
     "avg_speed": "平均速度：",
     "ins_speed": "瞬时速度：",
     "open_outside": "请使用外置浏览器打开",
     "copy_ok": "已复制",
     "copy_fail": "复制失败",
+    "blob_mode": "兼容性好，传输时需要将文件临时存储在运行内存中",
+    "stream_mode": "体验最佳，部分设备不支持",
     "home": "主页",
     "about": "关于"
   },
@@ -31,6 +34,7 @@
     "conn_signal": "正在连接信令服务器",
     "wait_peer": "等待对等端连接",
     "wait_accept": "等待对等端同意下载",
+    "wait_accept_recv": "等待开始下载",
     "negotiate": "正在协商 P2P 连接",
     "transfer": "传输中",
     "finish": "完成",

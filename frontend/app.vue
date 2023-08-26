@@ -8,20 +8,12 @@ async function onBeforeEnter(): Promise<void> {
 
 <template>
   <NuxtLayout>
-    <ClientOnly>
-      <notifications position="top center"/>
-    </ClientOnly>
-    <div
-      class="bg-gray-50 fixed flex flex-col gap-12 inset-0 items-center justify-center">
-      <AppHeader/>
-      <NuxtPage
-        :transition="{
-          name: 'page',
-          mode: 'out-in',
-          onBeforeEnter
-        }"/>
-    </div>
-    <AppFooter/>
+    <NuxtPage
+      :transition="{
+        name: 'page',
+        mode: 'out-in',
+        onBeforeEnter
+      }"/>
   </NuxtLayout>
 </template>
 

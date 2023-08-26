@@ -21,8 +21,13 @@ const { locale } = useI18n();
       <Meta content="/favicon.svg" property="og:image"/>
       <Link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
     </Head>
-    <Body>
+    <Body class="bg-gray-50">
+      <ClientOnly>
+        <notifications position="top center"/>
+        <BlockLayer v-if="isInternalBrowser()"/>
+      </ClientOnly>
       <slot></slot>
+      <AppFooter/>
     </Body>
   </Html>
 </template>

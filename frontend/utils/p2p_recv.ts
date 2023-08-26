@@ -2,6 +2,7 @@
 import { Socket, io } from 'socket.io-client';
 import serverList from '~/assets/ice_servers.json';
 import { PACK_SIZE } from './p2p';
+import { Base64 } from 'js-base64';
 
 /* Types */
 export enum RecvServiceError {
@@ -23,7 +24,7 @@ export function startRecvService(
   cbAssign: (selfId: string) => void,
   cbResponse: (name: string, size: number) => void,
   cbDataOpen: () => void,
-  cbMessage: (data: ArrayBuffer) => number,
+  cbMessage: (order: number, data: ArrayBuffer) => number,
   cbDone: () => void
 ): () => Promise<void> {
   if (typeof RTCPeerConnection === 'undefined') {
@@ -41,6 +42,7 @@ export function startRecvService(
 
   let selfId: null | string = null;
   let totSize: number = 0;
+  let key: CryptoKey;
   let tPerNum: number = 1;
   let tNum: number = 0;
   let retry: number = 0;
@@ -71,12 +73,19 @@ export function startRecvService(
       selfId = inSelfId;
     }
   });
-  socket.on('response', (inPeerId: string, data: any): void => {
+  socket.on('response', async (inPeerId: string, data: any): Promise<void> => {
     if (peerId !== inPeerId) {
       return;
     }
     totSize = data.size;
     tPerNum = Math.ceil(totSize / PACK_SIZE / 1000);
+    key = await window.crypto.subtle.importKey(
+      'raw',
+      Base64.toUint8Array(data.key),
+      { name: 'AES-GCM' },
+      true,
+      ['encrypt', 'decrypt']
+    );
     cbResponse(data.name, data.size);
   });
 
@@ -109,21 +118,24 @@ export function startRecvService(
       socket.emit('candidate', peerId, ev.candidate);
     }
   });
-  peerConn.addEventListener('connectionstatechange', async (): Promise<void> => {
-    if (peerConn.connectionState === 'failed') {
-      if (retry < 5) {
-        const offer: RTCSessionDescriptionInit = await peerConn.createOffer({
-          iceRestart: true
-        });
-        await peerConn.setLocalDescription(offer);
-        socket.emit('offer', peerId, offer);
-        retry++;
-        return;
+  peerConn.addEventListener(
+    'connectionstatechange',
+    async (): Promise<void> => {
+      if (peerConn.connectionState === 'failed') {
+        if (retry < 5) {
+          const offer: RTCSessionDescriptionInit = await peerConn.createOffer({
+            iceRestart: true
+          });
+          await peerConn.setLocalDescription(offer);
+          socket.emit('offer', peerId, offer);
+          retry++;
+          return;
+        }
+        cbError(RecvServiceError.WebRTCConnectFail);
+        socket.disconnect();
       }
-      cbError(RecvServiceError.WebRTCConnectFail);
-      socket.disconnect();
     }
-  });
+  );
 
   dataCh.binaryType = 'arraybuffer';
   dataCh.addEventListener('error', (): void => {
@@ -131,27 +143,40 @@ export function startRecvService(
   });
   dataCh.addEventListener('open', cbDataOpen);
 
-  dataCh.addEventListener('message', (ev: MessageEvent<ArrayBuffer>): void => {
-    const recvBytes: number = cbMessage(ev.data);
+  dataCh.addEventListener(
+    'message',
+    async (ev: MessageEvent<ArrayBuffer>): Promise<void> => {
+      const ivv: DataView = new DataView(ev.data);
+      const dePack = await window.crypto.subtle.decrypt(
+        {
+          name: 'AES-GCM',
+          iv: ev.data.slice(0, 8)
+        },
+        key,
+        ev.data.slice(8)
+      );
 
-    tNum++;
-    if (tNum % tPerNum === 0) {
-      const buffer: Uint8Array = new Uint8Array(8);
-      const view: DataView = new DataView(buffer.buffer);
+      const recvBytes: number = cbMessage(Number(ivv.getBigUint64(0)), dePack);
 
-      view.setBigUint64(0, BigInt(recvBytes));
-      dataCh.send(buffer);
+      tNum++;
+      if (tNum % tPerNum === 0) {
+        const buffer: Uint8Array = new Uint8Array(8);
+        const view: DataView = new DataView(buffer.buffer);
+
+        view.setBigUint64(0, BigInt(recvBytes));
+        dataCh.send(buffer);
+      }
+      if (recvBytes >= totSize) {
+        const buffer: Uint8Array = new Uint8Array(8);
+        const view: DataView = new DataView(buffer.buffer);
+
+        view.setBigUint64(0, BigInt(recvBytes));
+        dataCh.send(buffer);
+
+        cbDone();
+      }
     }
-    if (recvBytes >= totSize) {
-      const buffer: Uint8Array = new Uint8Array(8);
-      const view: DataView = new DataView(buffer.buffer);
-
-      view.setBigUint64(0, BigInt(recvBytes));
-      dataCh.send(buffer);
-
-      cbDone();
-    }
-  });
+  );
 
   socket.emit('request', peerId);
 

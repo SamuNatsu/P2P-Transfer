@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { Socket } from 'socket.io-client';
+import { DLStream } from '~/utils/dl';
 import { RecvServiceError } from '~/utils/p2p_recv';
 
 /* Types */
@@ -27,6 +28,7 @@ const refs = reactive({
   fileName: null as null | string,
   fileSize: 0,
   fileRecvSize: 0,
+  dlMode: false,
   status: Status.Idle,
   selfId: null as null | string,
   avgSpeed: 0,
@@ -40,9 +42,8 @@ const avgSpeedTxt = computed((): string => convert(refs.avgSpeed, 'B/s'));
 const insSpeedTxt = computed((): string => convert(refs.insSpeed, 'B/s'));
 
 /* Variables */
-const blobMap: Map<number, Uint8Array> = new Map();
-let stream: WritableStream;
-let writer: WritableStreamDefaultWriter;
+const blobMap: Map<number, ArrayBuffer> = new Map();
+let dlStream: null | DLStream = null;
 let socket: Socket;
 let peerConn: RTCPeerConnection;
 let handle: number;
@@ -55,7 +56,9 @@ function abort(): void {
   peerConn.close();
   clearInterval(handle);
   window.onbeforeunload = null;
-  writer.abort();
+  if (dlStream !== null) {
+    dlStream.abort();
+  }
 }
 let startDownload: () => void;
 
@@ -82,6 +85,9 @@ async function init(): Promise<void> {
       peerConn.close();
       clearInterval(handle);
       window.onbeforeunload = null;
+      if (dlStream !== null) {
+        dlStream.abort();
+      }
 
       switch (err) {
         case RecvServiceError.WebRTCDisabled:
@@ -124,13 +130,9 @@ async function init(): Promise<void> {
     (name: string, size: number): void => {
       refs.fileName = name;
       refs.fileSize = size;
-      stream = streamSaver.createWriteStream(refs.fileName, {
-        size: refs.fileSize
-      });
-      writer = stream.getWriter();
       refs.status = Status.WaitingAccept;
     },
-    (): void => {
+    async (): Promise<void> => {
       refs.fileRecvSize = 0;
       refs.avgSpeed = 0;
       refs.insSpeed = 0;
@@ -141,17 +143,18 @@ async function init(): Promise<void> {
         refs.insSpeed = (refs.fileRecvSize - lastRecvSize) * 2;
         lastRecvSize = refs.fileRecvSize;
       }, 500);
+      dlStream = await createDlStream(refs.fileName as string, refs.fileSize, refs.dlMode);
       refs.status = Status.Transfering;
     },
-    (data: ArrayBuffer): number => {
-      const view: DataView = new DataView(data);
-
-      blobMap.set(view.getUint32(0), new Uint8Array(data.slice(4)));
+    (_order: number, data: ArrayBuffer): number => {
+      blobMap.set(_order, data);
       while (blobMap.has(order)) {
-        const blob: Uint8Array = blobMap.get(order) as Uint8Array;
+        const blob: ArrayBuffer = blobMap.get(order) as ArrayBuffer;
 
         refs.fileRecvSize += blob.byteLength;
-        writer.write(blobMap.get(order) as Uint8Array);
+        if (dlStream !== null) {
+          dlStream.write(blob);
+        }
         blobMap.delete(order);
         order++;
       }
@@ -160,7 +163,9 @@ async function init(): Promise<void> {
     },
     (): void => {
       refs.status = Status.Finished;
-      writer.close();
+      if (dlStream !== null) {
+        dlStream.close();
+      }
       clearInterval(handle);
       window.onbeforeunload = null;
       setTimeout((): void => {
@@ -184,22 +189,6 @@ defineExpose({
 
 <template>
   <div class="flex flex-col items-center gap-4">
-    <div class="flex gap-4">
-      <AppButton
-        v-if="refs.status < Status.Transfering"
-        @click="startDownload"
-        class="border-green-500 hover:bg-green-500"
-        :disabled="refs.status < Status.WaitingAccept">
-        {{ $t('button.start_download') }}
-      </AppButton>
-      <AppButton
-        v-else
-        @click="abort"
-        class="border-red-500 hover:bg-red-500"
-        :disabled="refs.status === Status.Finished">
-        {{ $t('button.abort') }}
-      </AppButton>
-    </div>
     <div class="flex flex-col">
       <p>
         <b>{{ $t('status._') }}</b>
@@ -225,7 +214,7 @@ defineExpose({
         </span>
         <span
           v-else-if="refs.status === Status.WaitingAccept"
-          class="text-purple-500">{{ $t('status.wait_accept') }}
+          class="text-purple-500">{{ $t('status.wait_accept_recv') }}
         </span>
         <span
           v-else-if="refs.status === Status.Negotiating"
@@ -258,13 +247,30 @@ defineExpose({
         </p>
       </template>
       <template v-if="refs.status >= Status.Transfering">
-        <p>
-          <b>{{ $t('ui.progress') }}</b>
-          {{ (refs.fileRecvSize / refs.fileSize * 100).toFixed(1) }}%
-        </p>
         <p><b>{{ $t('ui.avg_speed') }}</b>{{ avgSpeedTxt }}</p>
         <p><b>{{ $t('ui.ins_speed') }}</b>{{ insSpeedTxt }}</p>
+        <ProgressBar
+            class="my-1"
+            color="bg-green-400"
+            :progress="refs.fileRecvSize / refs.fileSize * 100"/>
       </template>
+    </div>
+    <DLModeSelector
+      v-if="refs.status === Status.WaitingAccept"
+      v-model:input="refs.dlMode"/>
+    <div class="flex gap-4">
+      <AppButton
+        v-if="refs.status === Status.WaitingAccept"
+        @click="startDownload"
+        class="border-green-500 hover:bg-green-500">
+        {{ $t('button.start_download') }}
+      </AppButton>
+      <AppButton
+        v-if="Status.Negotiating <= refs.status && refs.status < Status.Finished"
+        @click="abort"
+        class="border-red-500 hover:bg-red-500">
+        {{ $t('button.abort') }}
+      </AppButton>
     </div>
     <p v-if="refs.error.length !== 0" class="font-bold max-w-[15rem] text-red-500">{{ refs.error }}</p>
   </div>

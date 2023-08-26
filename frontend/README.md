@@ -1,6 +1,6 @@
-# Nuxt 3 Minimal Starter
+# Frontend
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Frontend for P2P Transfer
 
 ## Setup
 
@@ -59,5 +59,3 @@ pnpm run preview
 # yarn
 yarn preview
 ```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

@@ -2,6 +2,8 @@
 import { Socket, io } from 'socket.io-client';
 import serverList from '~/assets/ice_servers.json';
 import { BUFF_SIZE, PACK_SIZE } from './p2p';
+import { Base64 } from 'js-base64';
+import { wrap } from 'module';
 
 /* Types */
 export enum SendServiceError {
@@ -13,7 +15,7 @@ export enum SendServiceError {
 }
 
 /* Start service */
-export function startSendService(
+export async function startSendService(
   file: File,
   cbError: (err: SendServiceError) => void,
   cbReady: (socket: Socket, peerConn: RTCPeerConnection) => void,
@@ -23,7 +25,7 @@ export function startSendService(
   cbOffer: () => void,
   cbStart: () => void,
   cbProgress: (recvBytes: number) => void
-): void {
+): Promise<void> {
   if (typeof RTCPeerConnection === 'undefined') {
     cbError(SendServiceError.WebRTCDisabled);
     return;
@@ -35,6 +37,14 @@ export function startSendService(
       (value: string): RTCIceServer => ({ urls: value })
     )
   });
+  const key: CryptoKey = await window.crypto.subtle.generateKey(
+    {
+      name: 'AES-GCM',
+      length: 256
+    },
+    true,
+    ['encrypt', 'decrypt']
+  );
 
   let selfId: null | string = null;
   let peerId: null | string = null;
@@ -58,7 +68,7 @@ export function startSendService(
       selfId = inSelfId;
     }
   });
-  socket.on('request', (inPeerId: string): void => {
+  socket.on('request', async (inPeerId: string): Promise<void> => {
     if (peerId === null) {
       cbPeer(inPeerId);
       peerId = inPeerId;
@@ -66,9 +76,14 @@ export function startSendService(
     if (peerId !== inPeerId) {
       return;
     }
+    const rawKey: ArrayBuffer = await window.crypto.subtle.exportKey(
+      'raw',
+      key
+    );
     socket.emit('response', peerId, {
       name: file.name,
-      size: file.size
+      size: file.size,
+      key: Base64.fromUint8Array(new Uint8Array(rawKey))
     });
   });
 
@@ -146,13 +161,27 @@ export function startSendService(
       }
     );
 
-    reader.addEventListener('load', (): void => {
+    reader.addEventListener('load', async (): Promise<void> => {
       const result: ArrayBuffer = reader.result as ArrayBuffer;
-      const wrapper: Uint8Array = new Uint8Array(result.byteLength + 4);
+
+      const iv: ArrayBuffer = new ArrayBuffer(8);
+      const ivv: DataView = new DataView(iv);
+      ivv.setBigUint64(0, BigInt(order));
+
+      const enResult: ArrayBuffer = await window.crypto.subtle.encrypt(
+        {
+          name: 'AES-GCM',
+          iv
+        },
+        key,
+        result
+      );
+
+      const wrapper: Uint8Array = new Uint8Array(enResult.byteLength + 8);
       const view: DataView = new DataView(wrapper.buffer);
 
-      view.setUint32(0, order);
-      wrapper.set(new Uint8Array(result), 4);
+      view.setBigUint64(0, BigInt(order));
+      wrapper.set(new Uint8Array(enResult), 8);
       dataCh.send(wrapper);
 
       order++;

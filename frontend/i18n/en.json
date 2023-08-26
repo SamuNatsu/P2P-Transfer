@@ -9,6 +9,8 @@
     "send": "Send",
     "abort": "Abort",
     "click_to_copy": "Click to Copy Link",
+    "blob_mode": "Blob Mode",
+    "stream_mode": "Stream Mode",
     "start_download": "Start Download"
   },
   "ui": {
@@ -16,12 +18,13 @@
     "file_size": "File Size: ",
     "self_id": "Host ID: ",
     "peer_id": "Peer ID: ",
-    "progress": "Progress: ",
     "avg_speed": "Avg Speed: ",
     "ins_speed": "Ins Speed: ",
     "open_outside": "Please use external browser",
     "copy_ok": "Copied",
     "copy_fail": "Copy failed",
+    "blob_mode": "Better compatibility, temporarily store file in memory while transfering",
+    "stream_mode": "Best experience, some device not support",
     "home": "Home",
     "about": "About"
   },
@@ -31,6 +34,7 @@
     "conn_signal": "Connecting signal server",
     "wait_peer": "Waiting peer",
     "wait_accept": "Waiting accept",
+    "wait_accept_recv": "Waiting start to download",
     "negotiate": "Negotiating",
     "transfer": "Transfering",
     "finish": "Finished",

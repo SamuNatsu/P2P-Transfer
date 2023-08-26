@@ -5,7 +5,7 @@ const localePath = useLocalePath();
 
 <template>
   <footer
-    class="absolute bottom-2 flex font-smiley gap-4 items-center justify-center w-full">
+    class="bottom-2 fixed flex font-smiley gap-4 items-center justify-center w-full">
     <NuxtLink
       class="transition-colors hover:text-blue-500"
       :to="localePath('/')">
