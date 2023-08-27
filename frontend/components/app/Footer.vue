@@ -13,7 +13,6 @@ const localePath = useLocalePath();
     </NuxtLink>
     <NuxtLink
       class="transition-colors hover:text-blue-500"
-      target="_blank"
       :to="localePath('/about')">
       {{ $t('ui.about') }}
     </NuxtLink>

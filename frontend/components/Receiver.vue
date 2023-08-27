@@ -17,11 +17,12 @@ enum Status {
 
 /* Properties */
 const props = defineProps<{
-  peerId: string
+  peerId: string;
 }>();
 
 /* Inject */
 const { t } = useI18n();
+const { log } = useDebugInfo();
 
 /* Reactive */
 const refs = reactive({
@@ -59,6 +60,7 @@ function abort(): void {
   if (dlStream !== null) {
     dlStream.abort();
   }
+  log('Abort triggered');
 }
 let startDownload: () => void;
 
@@ -66,9 +68,6 @@ async function init(): Promise<void> {
   if (isInternalBrowser()) {
     return;
   }
-
-  const streamSaver = (await import('streamsaver')).default;
-  streamSaver.mitm = '/mitm.html';
 
   let startTime: number;
   let lastRecvSize: number = 0;
@@ -91,24 +90,31 @@ async function init(): Promise<void> {
 
       switch (err) {
         case RecvServiceError.WebRTCDisabled:
+          log('Recv service error: WebRTC disabled');
           refs.error = t('error.webrtc_disabled');
           break;
         case RecvServiceError.ConnectFail:
+          log('Recv service error: Signal connect fail');
           refs.error = t('error.signal_conn');
           break;
         case RecvServiceError.NotExists:
+          log('Recv service error: Peer not exists');
           refs.error = t('error.not_exists');
           break;
         case RecvServiceError.Paired:
+          log('Recv service error: Peer has been paired');
           refs.error = t('error.paired');
           break;
         case RecvServiceError.UnexpectedDisconnect:
+          log('Recv service error: Unexpected signal disconnect');
           refs.error = t('error.signal_disconn');
           break;
         case RecvServiceError.WebRTCConnectFail:
+          log('Recv service error: WebRTC connect fail');
           refs.error = t('error.webrtc_conn');
           break;
         case RecvServiceError.DataChannelFail:
+          log('Recv service error: Data channel fail');
           refs.error = t('error.data_ch');
           break;
       }
@@ -133,6 +139,7 @@ async function init(): Promise<void> {
       refs.status = Status.WaitingAccept;
     },
     async (): Promise<void> => {
+      log('Start transfering');
       refs.fileRecvSize = 0;
       refs.avgSpeed = 0;
       refs.insSpeed = 0;
@@ -143,7 +150,11 @@ async function init(): Promise<void> {
         refs.insSpeed = (refs.fileRecvSize - lastRecvSize) * 2;
         lastRecvSize = refs.fileRecvSize;
       }, 500);
-      dlStream = await createDlStream(refs.fileName as string, refs.fileSize, refs.dlMode);
+      dlStream = await createDlStream(
+        refs.fileName as string,
+        refs.fileSize,
+        refs.dlMode
+      );
       refs.status = Status.Transfering;
     },
     (_order: number, data: ArrayBuffer): number => {
@@ -163,6 +174,7 @@ async function init(): Promise<void> {
     },
     (): void => {
       refs.status = Status.Finished;
+      log('Recv finished');
       if (dlStream !== null) {
         dlStream.close();
       }
@@ -177,14 +189,13 @@ async function init(): Promise<void> {
 
   startDownload = async (): Promise<void> => {
     refs.status = Status.Negotiating;
+    log('Start negotiating');
     await acceptFn();
   };
 }
 
 /* Expose */
-defineExpose({
-  init
-});
+defineExpose({ init });
 </script>
 
 <template>

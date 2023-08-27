@@ -10,26 +10,30 @@ definePageMeta({
 </script>
 
 <template>
-  <main class="flex flex-col items-center gap-4">
-    <p class="font-smiley text-xl">
-      <b>{{ t('inspired_by') }}</b>
-      <NuxtLink
-        class="text-blue-500 transition-colors hover:text-red-500"
-        target="_blank"
-        to="https://transfer.zip/">
-        transfer.zip
-      </NuxtLink>
-    </p>
-    <p class="font-smiley text-xl">
-    <b>{{ t('made_with_love_by') }}</b>
-      <NuxtLink
-        class="text-blue-500 transition-colors hover:text-red-500"
-        target="_blank"
-        to="https://github.com/SamuNatsu/">
-        SNRainiar
-      </NuxtLink>
-    </p>
-  </main>
+  <div
+    class="fixed flex flex-col gap-12 inset-0 items-center justify-center">
+    <AppHeader/>
+    <main class="flex flex-col items-center gap-4">
+      <p class="font-smiley text-xl">
+        <b>{{ t('inspired_by') }}</b>
+        <NuxtLink
+          class="text-blue-500 transition-colors hover:text-red-500"
+          target="_blank"
+          to="https://transfer.zip/">
+          transfer.zip
+        </NuxtLink>
+      </p>
+      <p class="font-smiley text-xl">
+      <b>{{ t('made_with_love_by') }}</b>
+        <NuxtLink
+          class="text-blue-500 transition-colors hover:text-red-500"
+          target="_blank"
+          to="https://github.com/SamuNatsu/">
+          SNRainiar
+        </NuxtLink>
+      </p>
+    </main>
+  </div>
 </template>
 
 <i18n lang="json">

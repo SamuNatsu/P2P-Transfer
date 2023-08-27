@@ -17,6 +17,7 @@ enum Status {
 
 /* Inject */
 const { t } = useI18n();
+const { log } = useDebugInfo();
 
 /* Reactive */
 const refs = reactive({
@@ -55,6 +56,7 @@ function selectFile(ev: Event): void {
   }
   file = files[0];
 
+  log(`File selected: name="${file.name}" size=${file.size}`);
   refs.fileName = file.name;
   refs.fileSize = file.size;
   refs.qrDataUrl = null;
@@ -72,6 +74,7 @@ function abort(): void {
   peerConn.close();
   clearInterval(handle);
   window.onbeforeunload = null;
+  log('Abort triggered');
 }
 function sendFile(): void {
   let startTime: number;
@@ -91,18 +94,23 @@ function sendFile(): void {
 
       switch (err) {
         case SendServiceError.WebRTCDisabled:
+          log('Send service error: WebRTC disabled');
           refs.error = t('error.webrtc_disabled');
           break;
         case SendServiceError.ConnectFail:
+          log('Send service error: Signal connect fail');
           refs.error = t('error.signal_conn');
           break;
         case SendServiceError.UnexpectedDisconnect:
+          log('Send service error: Unexpected signal disconnect');
           refs.error = t('error.signal_disconn');
           break;
         case SendServiceError.WebRTCConnectFail:
+          log('Send service error: WebRTC connect fail');
           refs.error = t('error.webrtc_conn');
           break;
         case SendServiceError.DataChannelFail:
+          log('Send service error: Data channel fail');
           refs.error = t('error.data_ch');
           break;
       }
@@ -128,9 +136,11 @@ function sendFile(): void {
       refs.status = Status.WaitingAccept;
     },
     (): void => {
+      log('Start negotiating');
       refs.status = Status.Negotiating;
     },
     (): void => {
+      log('Start transfering');
       refs.fileRecvSize = 0;
       refs.avgSpeed = 0;
       refs.insSpeed = 0;
@@ -148,6 +158,7 @@ function sendFile(): void {
         refs.fileRecvSize = recvBytes;
         if (recvBytes >= refs.fileSize) {
           refs.status = Status.Finished;
+          log('Send finished');
           clearInterval(handle);
           window.onbeforeunload = null;
           setTimeout((): void => {
