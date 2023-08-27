@@ -2,8 +2,7 @@
 import { Socket, io } from 'socket.io-client';
 import serverList from '~/assets/ice_servers.json';
 import { BUFF_SIZE, PACK_SIZE } from './p2p';
-import { Base64 } from 'js-base64';
-import { wrap } from 'module';
+import { encryptData, exportKey, generateKey } from './crypto';
 
 /* Types */
 export enum SendServiceError {
@@ -26,6 +25,9 @@ export async function startSendService(
   cbStart: () => void,
   cbProgress: (recvBytes: number) => void
 ): Promise<void> {
+  const { log } = useDebugInfo();
+  log('Start send service');
+
   if (typeof RTCPeerConnection === 'undefined') {
     cbError(SendServiceError.WebRTCDisabled);
     return;
@@ -37,14 +39,7 @@ export async function startSendService(
       (value: string): RTCIceServer => ({ urls: value })
     )
   });
-  const key: CryptoKey = await window.crypto.subtle.generateKey(
-    {
-      name: 'AES-GCM',
-      length: 256
-    },
-    true,
-    ['encrypt', 'decrypt']
-  );
+  const key: CryptoKey = await generateKey();
 
   let selfId: null | string = null;
   let peerId: null | string = null;
@@ -52,11 +47,21 @@ export async function startSendService(
 
   cbReady(socket, peerConn);
 
-  socket.on('connect_error', (): void => {
+  socket.on('connect_error', (err: Error): void => {
+    log(`Signal connect error: ${err.message}`);
     cbError(SendServiceError.ConnectFail);
   });
+  socket.on('rtc_fail', (inPeerId: string): void => {
+    if (peerId !== inPeerId) {
+      return;
+    }
+    log('Peer RTC fail');
+    cbError(SendServiceError.WebRTCConnectFail);
+    socket.disconnect();
+  });
 
-  socket.on('disconnect', (): void => {
+  socket.on('disconnect', (reason: Socket.DisconnectReason): void => {
+    log(`Signal disconnected: ${reason}`);
     if (!cbDisconnect()) {
       cbError(SendServiceError.UnexpectedDisconnect);
     }
@@ -64,26 +69,26 @@ export async function startSendService(
 
   socket.on('assign', (inSelfId: string): void => {
     if (selfId === null) {
+      log(`Self ID assigned by signal server: ${inSelfId}`);
       cbAssign(inSelfId);
       selfId = inSelfId;
     }
   });
   socket.on('request', async (inPeerId: string): Promise<void> => {
     if (peerId === null) {
+      log(`Get peer ID from request: ${inPeerId}`);
       cbPeer(inPeerId);
       peerId = inPeerId;
     }
     if (peerId !== inPeerId) {
       return;
     }
-    const rawKey: ArrayBuffer = await window.crypto.subtle.exportKey(
-      'raw',
-      key
-    );
+
+    log('Send response to peer');
     socket.emit('response', peerId, {
       name: file.name,
       size: file.size,
-      key: Base64.fromUint8Array(new Uint8Array(rawKey))
+      key: await exportKey(key)
     });
   });
 
@@ -91,9 +96,12 @@ export async function startSendService(
     if (peerId !== inPeerId) {
       return;
     }
+
+    log('Receive offer from peer');
     await peerConn.setRemoteDescription(data);
     const answer: RTCSessionDescriptionInit = await peerConn.createAnswer();
 
+    log('Send answer to peer');
     await peerConn.setLocalDescription(answer);
     socket.emit('answer', inPeerId, answer);
 
@@ -103,26 +111,33 @@ export async function startSendService(
     if (peerId !== inPeerId) {
       return;
     }
+
+    log('Receive candidate from peer');
     await peerConn.addIceCandidate(data);
   });
 
   peerConn.addEventListener('icecandidate', (ev: RTCPeerConnectionIceEvent) => {
     if (ev.candidate !== null) {
+      log('Send candidate to peer');
       socket.emit('candidate', peerId, ev.candidate);
     }
   });
   peerConn.addEventListener('connectionstatechange', (): void => {
     if (peerConn.connectionState === 'failed') {
       if (retry < 5) {
+        log(`RTC connection fail, retry: ${retry++}`);
         socket.emit('retry', peerId);
-        retry++;
       } else {
+        log('RTC connection fail, out of retry times');
         cbError(SendServiceError.WebRTCConnectFail);
+        socket.emit('rtc_fail', peerId);
         socket.disconnect();
       }
     }
   });
   peerConn.addEventListener('datachannel', (ev: RTCDataChannelEvent): void => {
+    log('Data channel constructed');
+
     let offset: number = 0;
     let order: number = 0;
 
@@ -147,10 +162,14 @@ export async function startSendService(
     }
 
     dataCh.binaryType = 'arraybuffer';
-    dataCh.addEventListener('error', (): void => {
+    dataCh.addEventListener('open', (): void => {
+      log('Data channel open');
+      cbStart();
+    });
+    dataCh.addEventListener('error', (ev: Event): void => {
+      log(`Data channel error: ${(ev as RTCErrorEvent).error.message}`);
       cbError(SendServiceError.DataChannelFail);
     });
-    dataCh.addEventListener('open', cbStart);
     dataCh.addEventListener(
       'message',
       (ev: MessageEvent<ArrayBuffer>): void => {
@@ -163,20 +182,7 @@ export async function startSendService(
 
     reader.addEventListener('load', async (): Promise<void> => {
       const result: ArrayBuffer = reader.result as ArrayBuffer;
-
-      const iv: ArrayBuffer = new ArrayBuffer(8);
-      const ivv: DataView = new DataView(iv);
-      ivv.setBigUint64(0, BigInt(order));
-
-      const enResult: ArrayBuffer = await window.crypto.subtle.encrypt(
-        {
-          name: 'AES-GCM',
-          iv
-        },
-        key,
-        result
-      );
-
+      const enResult: ArrayBuffer = await encryptData(key, result);
       const wrapper: Uint8Array = new Uint8Array(enResult.byteLength + 8);
       const view: DataView = new DataView(wrapper.buffer);
 

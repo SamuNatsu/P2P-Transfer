@@ -60,7 +60,7 @@ io.on('connection', (socket: Socket): void => {
 
   socket.on('request', (peerId: string): void => {
     if (typeof peerId !== 'string') {
-      socket.disconnect(true);
+      socket.disconnect();
       return;
     }
     if (!sessions.has(peerId)) {
@@ -78,7 +78,7 @@ io.on('connection', (socket: Socket): void => {
   });
   socket.on('response', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
-      socket.disconnect(true);
+      socket.disconnect();
       return;
     }
     if (!sessions.has(peerId)) {
@@ -91,7 +91,7 @@ io.on('connection', (socket: Socket): void => {
 
   socket.on('offer', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
-      socket.disconnect(true);
+      socket.disconnect();
       return;
     }
     if (!sessions.has(peerId)) {
@@ -103,7 +103,7 @@ io.on('connection', (socket: Socket): void => {
   });
   socket.on('answer', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
-      socket.disconnect(true);
+      socket.disconnect();
       return;
     }
     if (!sessions.has(peerId)) {
@@ -115,7 +115,7 @@ io.on('connection', (socket: Socket): void => {
   });
   socket.on('candidate', (peerId: string, data: any): void => {
     if (typeof peerId !== 'string') {
-      socket.disconnect(true);
+      socket.disconnect();
       return;
     }
     if (!sessions.has(peerId)) {
@@ -128,7 +128,7 @@ io.on('connection', (socket: Socket): void => {
 
   socket.on('retry', (peerId: string): void => {
     if (typeof peerId !== 'string') {
-      socket.disconnect(true);
+      socket.disconnect();
       return;
     }
     if (!sessions.has(peerId)) {
@@ -137,6 +137,14 @@ io.on('connection', (socket: Socket): void => {
     }
     sessions.get(peerId)?.emit('retry', id);
     console.log(`[Websocket] Retry signal: ${id} -> ${peerId}`);
+  });
+  socket.on('rtc_fail', (peerId: string): void => {
+    if (typeof peerId !== 'string' || !sessions.has(peerId)) {
+      socket.disconnect();
+      return;
+    }
+    sessions.get(peerId)?.emit('rtc_fail', id);
+    console.log(`[Websocket] Fail signal: ${id} -> ${peerId}`);
   });
 
   socket.emit('assign', id);

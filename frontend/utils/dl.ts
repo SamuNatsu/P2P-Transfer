@@ -15,7 +15,11 @@ export async function createDlStream(
   fileSize: number,
   blobMode: boolean
 ): Promise<DLStream> {
+  const { log } = useDebugInfo();
+
   if (blobMode) {
+    log('Create download stream under blob mode');
+
     let blobs: Blob[] = [];
 
     return {
@@ -25,9 +29,12 @@ export async function createDlStream(
         blobs.push(new Blob([data]));
       },
       abort(): void {
+        log('Download stream abort');
         blobs = [];
       },
       close(): void {
+        log('Download stream close');
+
         const fileBlob: Blob = new Blob(blobs);
         const el: HTMLAnchorElement = document.createElement('a');
 
@@ -39,6 +46,8 @@ export async function createDlStream(
       }
     };
   } else {
+    log('Create download stream under stream mode');
+
     const streamSaver = (await import('streamsaver')).default;
     streamSaver.mitm = '/mitm.html';
 
@@ -54,9 +63,11 @@ export async function createDlStream(
         writer.write(new Uint8Array(data));
       },
       abort(): void {
+        log('Download stream abort');
         writer.abort();
       },
       close(): void {
+        log('Download stream close');
         writer.close();
       }
     };

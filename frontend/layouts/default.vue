@@ -25,6 +25,7 @@ const { locale } = useI18n();
       <ClientOnly>
         <notifications position="top center"/>
         <BlockLayer v-if="isInternalBrowser()"/>
+        <DebugLayer/>
       </ClientOnly>
       <slot></slot>
       <AppFooter/>
