@@ -7,11 +7,7 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/i18n', '@nuxtjs/tailwindcss', 'nuxt-svgo'],
   i18n: {
     defaultLocale: 'en',
-    detectBrowserLanguage: {
-      cookieKey: 'language',
-      redirectOn: 'root',
-      useCookie: true
-    },
+    detectBrowserLanguage: false,
     lazy: true,
     langDir: './i18n',
     locales: [
