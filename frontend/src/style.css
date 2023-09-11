@@ -1,0 +1,21 @@
+/* Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Font faces */
+@font-face {
+  font-family: smiley-sans;
+  src: url('/fonts/SmileySans-Oblique.ttf.woff2');
+}
+
+/* Scroll bar */
+*::-webkit-scrollbar {
+  @apply h-2 w-2
+}
+*::-webkit-scrollbar-thumb {
+  @apply bg-neutral-500 dark:bg-white
+}
+*::-webkit-scrollbar-track {
+  @apply bg-neutral-300 dark:bg-neutral-500
+}

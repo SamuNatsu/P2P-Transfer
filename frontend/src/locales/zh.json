@@ -1,0 +1,48 @@
+{
+  "button": {
+    "click_to_copy": "点击复制链接",
+    "send_file": "发送文件",
+    "recv_file": "接收文件",
+    "select_file": "选择文件",
+    "file_preview": "文件预览",
+    "start_send": "开始发送",
+    "abort": "强制中止"
+  },
+  "ui": {
+    "open_outside": "请使用外部浏览器打开",
+    "file_name": "文件名",
+    "file_size": "文件大小",
+    "file_type": "文件类型",
+    "local_id": "本地 ID",
+    "remote_id": "远程 ID",
+    "speed": "传输速度",
+    "manual_copy": "请手动复制以下链接"
+  },
+  "notification": {
+    "copy": {
+      "ok": "复制成功",
+      "fail": "复制失败",
+      "fail_text": "浏览器拒绝"
+    }
+  },
+  "status": {
+    "_": "状态",
+    "idle": "空闲",
+    "conn_signal": "正在连接信令服务器",
+    "wait_peer": "等待对等端连接",
+    "wait_start": "等待开始下载",
+    "negotiate": "正在协商 P2P 连接",
+    "transfer": "传输中",
+    "finish": "完成",
+    "error": "错误"
+  },
+  "error": {
+    "ws_not_avail": "WebSocket 被浏览器禁用",
+    "webrtc_not_avail": "WebRTC 被浏览器禁用",
+    "signal_conn_fail": "无法连接信令服务器",
+    "signal_disconn_fail": "与信令服务器以外断开",
+    "webrtc_conn_fail": "无法建立 P2P 连接",
+    "data_ch_error": "数据传输失败",
+    "abort": "用户强制终止"
+  }
+}
