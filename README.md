@@ -1,4 +1,6 @@
 # P2P-Transfer
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FSamuNatsu%2FP2P-Transfer.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FSamuNatsu%2FP2P-Transfer?ref=badge_shield)
+
 
 A P2P File Transfer Web App
 
@@ -41,3 +43,7 @@ After that, start server
 node ./server.min.mjs
 ```
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FSamuNatsu%2FP2P-Transfer.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FSamuNatsu%2FP2P-Transfer?ref=badge_large)
