@@ -5,7 +5,10 @@ import { setupI18n } from '@/i18n';
 import { useTitle } from '@vueuse/core';
 
 // Components
+import { RouterView } from 'vue-router';
 import AppHeader from '@/components/AppHeader.vue';
+import LanguageSelector from '@/components/LanguageSelector.vue';
+import AppFooter from '@/components/AppFooter.vue';
 
 // Injects
 const title = useTitle();
@@ -28,4 +31,7 @@ onBeforeMount(async (): Promise<void> => {
 
 <template>
   <AppHeader />
+  <LanguageSelector />
+  <RouterView />
+  <AppFooter />
 </template>

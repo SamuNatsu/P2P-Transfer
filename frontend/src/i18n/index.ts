@@ -1,11 +1,15 @@
 /// I18n module
 import { Ref } from 'vue';
 import { I18n, createI18n } from 'vue-i18n';
-import { useLocalStorage, useNavigatorLanguage } from '@vueuse/core';
+import {
+  createGlobalState,
+  useLocalStorage,
+  useNavigatorLanguage
+} from '@vueuse/core';
 
 // Intergrated locales
-import en from '@/i18n/locales/en.json';
-import zh from '@/i18n/locales/zh.json';
+import en from '@/i18n/en.json';
+import zh from '@/i18n/zh.json';
 
 // Types
 export type LocaleInfo = {
@@ -22,6 +26,10 @@ export const SUPPORT_LOCALES: LocaleInfo[] = [
   {
     locale: 'zh',
     display: '简体中文'
+  },
+  {
+    locale: 'ja',
+    display: '日本語'
   }
 ];
 
@@ -32,21 +40,26 @@ export const i18n: I18n = createI18n({
   messages: { en, zh }
 });
 
+// Local locale
+const useLocalLocale = createGlobalState(() =>
+  useLocalStorage<string | undefined>('language', undefined)
+);
+
 // Setup i18n
 export const setupI18n = async (): Promise<void> => {
   // Get local storage locale
-  let locale: string | undefined = useLocalStorage('language', undefined).value;
+  const locale: Ref<string | undefined> = useLocalLocale();
 
   // Get browser language
   const { language } = useNavigatorLanguage();
 
   // If undefined
-  if (locale === undefined) {
-    locale = language.value ?? 'en';
+  if (locale.value === undefined) {
+    locale.value = language.value ?? 'en';
   }
 
   // Set locale
-  await setLocale(locale);
+  await setLocale(locale.value);
 };
 
 // Set language
@@ -83,15 +96,25 @@ export const setLocale = async (locale: string): Promise<void> => {
 
   // If has support
   if (match.length > 0 && match[0][1] > 0) {
+    // Load messages
     await loadMessages(match[0][0]);
+
+    // Set locale
+    useLocalLocale().value = match[0][0];
+    (i18n.global.locale as Ref<string>).value = match[0][0];
+    document.documentElement.setAttribute('lang', match[0][0]);
+
+    console.debug(`[i18n] Locale "${locale}" set`);
   } else {
     console.debug(`[i18n] Locale "${locale}" not support`);
-  }
 
-  // Set locale
-  (i18n.global.locale as Ref).value = locale;
-  document.documentElement.setAttribute('lang', locale);
-  console.debug(`[i18n] Locale "${locale}" set`);
+    // Set locale
+    useLocalLocale().value = 'en';
+    (i18n.global.locale as Ref<string>).value = 'en';
+    document.documentElement.setAttribute('lang', 'en');
+
+    console.debug(`[i18n] Locale "${locale}" set`);
+  }
 };
 
 // Load messages
@@ -107,5 +130,6 @@ const loadMessages = async (locale: string): Promise<void> => {
   // Load messages
   const msg: any = await import(`./locales/${locale}.json`);
   i18n.global.setLocaleMessage(locale, msg);
+
   console.debug(`[i18n] Locale "${locale}" messages loaded`);
 };
