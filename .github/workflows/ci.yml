@@ -35,8 +35,6 @@ jobs:
           pnpm install --no-frozen-lockfile
           pnpm build
           cd ..
-      - name: Build docker image
-        run: docker build -t snrainiar/p2p-transfer .
       - name: Assemble server
         run: |
           rm -rf dist
@@ -44,6 +42,8 @@ jobs:
           cp backend/dist/server.esm.min.js dist/server.esm.min.js
           cp backend/package.json dist/package.json
           cp -r frontend/dist/ dist/www/
+      - name: Build docker image
+        run: docker build -t snrainiar/p2p-transfer .
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
