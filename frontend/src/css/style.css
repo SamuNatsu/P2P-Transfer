@@ -1,0 +1,13 @@
+/* Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles */
+body {
+  @apply bg-neutral-900 font-[mi-sans] text-white;
+}
+
+#app {
+  @apply flex flex-col items-center justify-center;
+}
