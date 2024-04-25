@@ -3,11 +3,13 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 // Plugins
+import icons from 'unplugin-icons/vite';
+import svgLoader from 'vite-svg-loader';
 import vue from '@vitejs/plugin-vue';
 
 // Export config
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [icons({ autoInstall: true }), svgLoader(), vue()],
   resolve: {
     alias: {
       '@': resolve('./src')

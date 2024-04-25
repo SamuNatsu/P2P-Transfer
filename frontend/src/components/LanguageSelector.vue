@@ -4,7 +4,7 @@ import { useLocalStorage } from '@vueuse/core';
 import { SUPPORT_LOCALES, setLocale } from '@/i18n';
 
 // Components
-import { Icon } from '@iconify/vue';
+import MdiLanguage from '~icons/mdi/language';
 
 // Injects
 const language: Ref<string> = useLocalStorage('language', '');
@@ -16,8 +16,9 @@ watch(language, (): void => {
 </script>
 
 <template>
-  <div class="bg-neutral-700 flex gap-2 items-center mt-4 px-2 py-1 rounded hover:bg-neutral-600">
-    <Icon class="text-2xl" icon="mdi:language" />
+  <div
+    class="bg-neutral-700 flex gap-2 items-center mt-4 px-2 py-1 rounded hover:bg-neutral-600">
+    <MdiLanguage class="text-2xl" />
     <select
       v-model="language"
       class="bg-transparent cursor-pointer outline-none">
