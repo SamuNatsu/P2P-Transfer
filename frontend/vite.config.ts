@@ -12,5 +12,14 @@ export default defineConfig({
     alias: {
       '@': resolve('./src')
     }
+  },
+  server: {
+    proxy: {
+      '/ws': {
+        changeOrigin: true,
+        target: 'http://localhost:3000/ws',
+        ws: true
+      }
+    }
   }
 });

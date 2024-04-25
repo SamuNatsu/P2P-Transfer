@@ -13,6 +13,7 @@
     "Built with <a href=\"https://cn.vuejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Vue3</a> & <a href=\"https://nodejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Node.js</a> for modern Web tech"
   ],
   "fail": {
+    "unsupport": "Browser unsupport WebSocket or WebRTC",
     "connect_to_server": "Fail to connect to server"
   }
 }
