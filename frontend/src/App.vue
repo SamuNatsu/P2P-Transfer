@@ -39,13 +39,15 @@ onBeforeMount(async (): Promise<void> => {
 <template>
   <AppHeader />
   <LanguageSelector />
-  <RouterView v-slot="{ Component }">
-    <Transition>
-      <KeepAlive>
-        <component :is="Component" />
-      </KeepAlive>
-    </Transition>
-  </RouterView>
+  <div class="flex flex-col items-center relative">
+    <RouterView v-slot="{ Component }">
+      <Transition>
+        <KeepAlive>
+          <component :is="Component" />
+        </KeepAlive>
+      </Transition>
+    </RouterView>
+  </div>
   <AppFooter />
 </template>
 
@@ -58,5 +60,9 @@ onBeforeMount(async (): Promise<void> => {
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
+}
+
+.v-leave-active {
+  position: absolute;
 }
 </style>

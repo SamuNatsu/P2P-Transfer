@@ -9,7 +9,7 @@ a {
 }
 
 body {
-  @apply bg-neutral-900 font-[mi-sans] text-white;
+  @apply bg-neutral-900 font-mi-sans text-white;
 }
 
 #app {

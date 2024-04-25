@@ -16,7 +16,7 @@ watch(language, (): void => {
 </script>
 
 <template>
-  <div class="bg-neutral-700 flex gap-2 items-center mt-8 px-2 py-1 rounded">
+  <div class="bg-neutral-700 flex gap-2 items-center mt-4 px-2 py-1 rounded hover:bg-neutral-600">
     <Icon class="text-2xl" icon="mdi:language" />
     <select
       v-model="language"

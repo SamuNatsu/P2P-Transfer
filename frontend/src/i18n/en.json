@@ -4,6 +4,17 @@
     "home": "Home",
     "about": "About"
   },
+  "index": {
+    "server_connected": "Server connected",
+    "send_file": "Send File",
+    "receive_file": "Receive File",
+    "reselect_file": "Reselect File",
+    "file_name": "File Name",
+    "file_size": "File Size",
+    "start_sending": "Start Sending",
+    "status": "Status",
+    "receive_code": "Receive Code"
+  },
   "about": [
     "Transfer files through browser <a href=\"https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API\" rel=\"noopener noreferer\" target=\"_blank\">WebRTC</a>",
     "Peer-to-peer <a href=\"https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API\" rel=\"noopener noreferer\" target=\"_blank\">encrypted</a>, no fear about leaking",

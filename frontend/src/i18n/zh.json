@@ -4,6 +4,17 @@
     "home": "首页",
     "about": "关于"
   },
+  "index": {
+    "server_connected": "服务器已连接",
+    "send_file": "发送文件",
+    "receive_file": "接收文件",
+    "reselect_file": "重新选择文件",
+    "file_name": "文件名",
+    "file_size": "文件大小",
+    "start_sending": "开始发送",
+    "status": "状态",
+    "receive_code": "取件码"
+  },
   "about": [
     "通过浏览器 <a href=\"https://developer.mozilla.org/zh-CN/docs/Web/API/WebRTC_API\" rel=\"noopener noreferer\" target=\"_blank\">WebRTC</a> 来分享文件",
     "流量端到端<a href=\"https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Crypto_API\" rel=\"noopener noreferer\" target=\"_blank\">加密</a>，无惧泄露",
