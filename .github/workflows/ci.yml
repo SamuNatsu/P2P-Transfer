@@ -1,58 +1,50 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: CI
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x, 18.x]
     steps:
-    - name: Checkout branch
-      uses: actions/checkout@v3
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: 7
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'pnpm'
-        cache-dependency-path: frontend/pnpm-lock.yaml
-    - name: Build frontend
-      run: |
-        cd frontend
-        pnpm config set auto-install-peers true
-        pnpm install --no-frozen-lockfile
-        pnpm generate
-        cd ..
-    - name: Build backend
-      run: |
-        cd backend
-        pnpm config set auto-install-peers true
-        pnpm install --no-frozen-lockfile
-        pnpm build
-        cd ..
-    - name: Assemle server
-      run: |
-        rm -rf server
-        mkdir server
-        cp backend/dist/server.min.mjs server/server.min.mjs
-        cp backend/package.json server/package.json
-        cp -r frontend/dist/ server/www/
-    - name: Create artifact
-      run: tar --dereference --hard-dereference --directory server/ -zcvf p2p-transfer.tar.gz .
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: p2p-transfer-node-${{ matrix.node-version }}
-        path: p2p-transfer.tar.gz
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Build frontend
+        run: |
+          cd frontend
+          pnpm config set auto-install-peers true
+          pnpm install --no-frozen-lockfile
+          pnpm build
+          cd ..
+      - name: Build backend
+        run: |
+          cd backend
+          pnpm config set auto-install-peers true
+          pnpm install --no-frozen-lockfile
+          pnpm build
+          cd ..
+      - name: Build docker image
+        run: docker build -t SamuNatsu/p2p-transfer .
+      - name: Assemble server
+        run: |
+          rm -rf dist
+          mkdir dist
+          cp backend/dist/server.esm.min.js dist/server.esm.min.js
+          cp backend/package.json dist/package.json
+          cp -r frontend/dist/ dist/www/
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: dist
