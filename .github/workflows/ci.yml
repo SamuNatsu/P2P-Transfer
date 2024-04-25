@@ -36,7 +36,7 @@ jobs:
           pnpm build
           cd ..
       - name: Build docker image
-        run: docker build -t SamuNatsu/p2p-transfer .
+        run: docker build -t snrainiar/p2p-transfer .
       - name: Assemble server
         run: |
           rm -rf dist
