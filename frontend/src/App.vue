@@ -32,6 +32,24 @@ onBeforeMount(async (): Promise<void> => {
 <template>
   <AppHeader />
   <LanguageSelector />
-  <RouterView />
+  <RouterView v-slot="{ Component }">
+    <Transition>
+      <KeepAlive>
+        <component :is="Component" />
+      </KeepAlive>
+    </Transition>
+  </RouterView>
   <AppFooter />
 </template>
+
+<style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+</style>

@@ -3,5 +3,16 @@
   "footer": {
     "home": "Home",
     "about": "About"
+  },
+  "about": [
+    "Transfer files through browser <a href=\"https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API\" rel=\"noopener noreferer\" target=\"_blank\">WebRTC</a>",
+    "Peer-to-peer <a href=\"https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API\" rel=\"noopener noreferer\" target=\"_blank\">encrypted</a>, no fear about leaking",
+    "Fully P2P, your data would not go through three-party servers",
+    "Using compression & multiple connection, everything goes fast",
+    "Fully <a href=\"https://github.com/SamuNatsu/P2P-Transfer\" rel=\"noopener noreferer\" target=\"_blank\">open source</a> Web application, you can deploy on you own",
+    "Built with <a href=\"https://cn.vuejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Vue3</a> & <a href=\"https://nodejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Node.js</a> for modern Web tech"
+  ],
+  "fail": {
+    "connect_to_server": "Fail to connect to server"
   }
 }

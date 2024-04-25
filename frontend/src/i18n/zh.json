@@ -3,5 +3,16 @@
   "footer": {
     "home": "首页",
     "about": "关于"
+  },
+  "about": [
+    "通过浏览器 <a href=\"https://developer.mozilla.org/zh-CN/docs/Web/API/WebRTC_API\" rel=\"noopener noreferer\" target=\"_blank\">WebRTC</a> 来分享文件",
+    "流量端到端<a href=\"https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Crypto_API\" rel=\"noopener noreferer\" target=\"_blank\">加密</a>，无惧泄露",
+    "完全 P2P 技术，你的数据不会通过第三方服务器",
+    "使用压缩和多连接发送，一切都传的飞快",
+    "完全<a href=\"https://github.com/SamuNatsu/P2P-Transfer\" rel=\"noopener noreferer\" target=\"_blank\">开源</a>的 Web 应用，你可以搭建属于你自己的服务",
+    "使用 <a href=\"https://cn.vuejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Vue3</a> 和 <a href=\"https://nodejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Node.js</a> 构建，拥抱现代 Web 技术"
+  ],
+  "fail": {
+    "connect_to_server": "无法连接服务器"
   }
 }

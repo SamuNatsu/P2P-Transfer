@@ -4,6 +4,10 @@
 @tailwind utilities;
 
 /* Global styles */
+a {
+  @apply text-blue-300 hover:text-red-300;
+}
+
 body {
   @apply bg-neutral-900 font-[mi-sans] text-white;
 }
