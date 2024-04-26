@@ -1,20 +1,40 @@
 /// Main entry
-import type ws from 'ws';
-
 import express from 'express';
-import expressWs from 'express-ws';
+import stream from 'stream';
 
-// Create application
-const app: express.Application = express();
+import { WebSocket } from 'ws';
+import { app, httpServer, wsServer } from '@/server';
+import { handleSession } from '@/session';
+import { Logger } from '@/logger';
 
-// Create websocket wrapper
-const appWs: expressWs.Instance = expressWs(app);
+// Add routes
+wsServer.addListener(
+  'connection',
+  (ws: WebSocket, req: express.Request): void => {
+    // Get remote address
+    const remoteAddr: string = `[${req.socket.remoteAddress}:${req.socket.remotePort}]`;
+    Logger.info(`[WebSocket] Connected: ${remoteAddr}`);
 
-appWs.app.ws('/ws', (ws: ws.WebSocket): void => {
-  console.log(ws);
-});
+    // Handle session
+    handleSession(ws, remoteAddr);
+  }
+);
 
-// Start listening
-appWs.app.listen(3000, (): void => {
-  console.log('Server start listening on port 3000');
+// Server static files
+app.use(express.static('public'));
+
+// Handle upgrade request
+httpServer.on(
+  'upgrade',
+  (request: express.Request, socket: stream.Duplex, head: Buffer): void => {
+    wsServer.handleUpgrade(request, socket, head, (socket: WebSocket): void => {
+      wsServer.emit('connection', socket, request);
+    });
+  }
+);
+
+// Start server
+const port: number = parseInt(process.env.PORT ?? '3000');
+httpServer.listen(port, (): void => {
+  Logger.info(`[Server] Start listening on port ${port}`);
 });
