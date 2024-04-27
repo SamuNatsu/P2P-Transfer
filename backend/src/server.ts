@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import http from 'http';
 import https from 'https';
 
-import { WebSocketServer } from 'ws';
+import { Server } from 'socket.io';
 import { Logger } from '@/logger';
 
 // Load TLS config
@@ -46,9 +46,10 @@ export const httpServer: http.Server = tls
     )
   : http.createServer(app);
 
-// Create WebSocket server
-export const wsServer: WebSocketServer = new WebSocketServer({
-  noServer: true
+// Create Socket.IO server
+export const wsServer: Server = new Server(httpServer, {
+  path: '/ws',
+  serveClient: false
 });
 
 // Use default middlewares
