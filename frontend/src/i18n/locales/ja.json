@@ -1,22 +1,23 @@
 {
-  "title": "P2P Transfer",
   "footer": {
     "home": "ホーム",
     "about": "サイトについて"
   },
-  "index": {
-    "server_connected": "サーバー接続中",
+  "btn": {
     "send_file": "ファイル送信",
     "receive_file": "ファイル受信",
     "back": "戻る",
+    "start_sending": "送信開始",
+    "interrupt": "中断"
+  },
+  "index": {
     "file_name": "ファイルネーム",
     "file_size": "ファイルサイズ",
-    "start_sending": "送信開始",
     "status": "ステータス",
     "receive_code": "受信コード"
   },
   "fail": {
-    "unsupport": "ブラウザが WebSocket または WebRTC をサポートしていない",
-    "connect_to_server": "サーバーへの接続に失敗"
+    "unsupport": "ブラウザが WebRTC をサポートしていない",
+    "connect_to_server": "シグナルサーバーへの接続に失敗"
   }
 }

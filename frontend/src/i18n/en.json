@@ -4,14 +4,16 @@
     "home": "Home",
     "about": "About"
   },
-  "index": {
-    "server_connected": "Server connected",
+  "btn": {
     "send_file": "Send File",
     "receive_file": "Receive File",
     "back": "Back",
+    "start_sending": "Start Sending",
+    "interrupt": "Interrupt"
+  },
+  "index": {
     "file_name": "File Name",
     "file_size": "File Size",
-    "start_sending": "Start Sending",
     "status": "Status",
     "receive_code": "Receive Code"
   },
@@ -24,12 +26,12 @@
     "Built with <a href=\"https://cn.vuejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Vue3</a> & <a href=\"https://nodejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Node.js</a> for modern Web tech"
   ],
   "fail": {
-    "unsupport": "Browser unsupport WebSocket or WebRTC",
-    "connect_to_server": "Fail to connect to server"
+    "unsupport": "Browser unsupport WebRTC",
+    "connect_to_server": "Fail to connect to signal server"
   },
   "status": {
     "idle": "Idle",
-    "registering": "Registering",
+    "connecting": "Connecting",
     "waiting": "Waiting",
     "negotiating": "Negotiating",
     "transfering": "Transfering",

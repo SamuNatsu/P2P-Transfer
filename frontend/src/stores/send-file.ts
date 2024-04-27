@@ -3,21 +3,22 @@ import { createGlobalState } from '@vueuse/core';
 import { ComputedRef, Ref, computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { Socket, io } from 'socket.io-client';
+
 // External stores
 import { useStore } from '@/stores';
-import { PackageFactory, WsPackage, parsePackage } from '@/net/package';
 
 // Export store
 export const useSendFileStore = createGlobalState(() => {
   /// Injects
   const { t } = useI18n();
-  const { mode, getWs } = useStore();
+  const { status: mainStatus } = useStore();
 
   /// States
   const file: Ref<File | null> = ref(null);
   const status: Ref<
     | 'idle'
-    | 'registering'
+    | 'connecting'
     | 'waiting'
     | 'negotiating'
     | 'transfering'
@@ -26,6 +27,10 @@ export const useSendFileStore = createGlobalState(() => {
     | 'interrupted'
   > = ref('idle');
   const code: Ref<string | null> = ref(null);
+
+  let _sessionId: string | null = null;
+  let _peerId: string | null = null;
+  let _socket: Socket | null = null;
 
   /// Getters
   const fileSize: ComputedRef<string> = computed((): string =>
@@ -40,39 +45,61 @@ export const useSendFileStore = createGlobalState(() => {
     file.value = null;
     status.value = 'idle';
     code.value = null;
+
+    _sessionId = null;
+    _peerId = null;
+    _socket = null;
   };
   const selectFile = (): void => {
+    resetStore();
+
     const el: HTMLInputElement = document.createElement('input');
     el.type = 'file';
     el.addEventListener('change', (): void => {
       file.value = el.files![0];
-      registerListeners();
 
-      mode.value = 'send';
+      mainStatus.value = 'send';
     });
     el.click();
   };
-  const messageHandler = (ev: MessageEvent): void => {
-    const pkg: WsPackage = parsePackage(ev.data);
-
-    switch (pkg.type) {
-      case 'register':
-        code.value = pkg.code;
-        status.value = 'waiting';
-        break;
+  const cleanup = (): void => {
+    if (_socket !== null) {
+      _socket.disconnect();
+      _socket = null;
     }
   };
-  const registerListeners = (): void => {
-    getWs()!.addEventListener('message', messageHandler);
-  };
-  const unregisterListeners = (): void => {
-    getWs()!.removeEventListener('message', messageHandler);
-  };
-  const startSend = (): void => {
-    status.value = 'registering';
-    getWs()!.send(PackageFactory.register());
+  const start = (): void => {
+    status.value = 'connecting';
+
+    _socket = io({
+      auth: { sessionId: _sessionId },
+      path: '/ws',
+      reconnectionAttempts: 5
+    });
+    _socket.io.on('reconnect_failed', (): void => {
+      status.value = 'failed';
+    });
+    _socket.on('session', (sessionId: string): void => {
+      _sessionId = sessionId;
+    });
+    _socket.on('peer', (peerId: string): void => {
+      _peerId = peerId;
+      status.value = 'negotiating';
+    });
+
+    // Register session
+    _socket.emit(
+      'register',
+      file.value!.name,
+      file.value!.size,
+      (receiveCode: string): void => {
+        code.value = receiveCode;
+        status.value = 'waiting';
+      }
+    );
   };
   const interrupt = (): void => {
+    cleanup();
     status.value = 'interrupted';
   };
 
@@ -83,11 +110,9 @@ export const useSendFileStore = createGlobalState(() => {
     code,
     fileSize,
     statusStr,
-    resetStore,
     selectFile,
-    registerListeners,
-    unregisterListeners,
-    startSend,
+    cleanup,
+    start,
     interrupt
   };
 });

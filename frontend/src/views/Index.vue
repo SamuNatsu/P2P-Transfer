@@ -3,24 +3,20 @@
 import { useStore } from '@/stores';
 
 // Components
-import InitClosed from '@/components/init/InitClosed.vue';
-import InitFail from '@/components/init/InitFail.vue';
-import InitOk from '@/components/init/InitOk.vue';
-import InitUnsupport from '@/components/init/InitUnsupport.vue';
-import InitWaiting from '@/components/init/InitWaiting.vue';
+import Home from '@/components/Home.vue';
+import SendFile from '@/components/SendFile.vue';
+import Unsupport from '@/components/Unsupport.vue';
 
 // Injects
-const { initState } = useStore();
+const { status } = useStore();
 </script>
 
 <template>
   <div>
     <Transition>
-      <InitWaiting v-if="initState === 'waiting'" />
-      <InitUnsupport v-else-if="initState === 'unsupport'" />
-      <InitFail v-else-if="initState === 'fail'" />
-      <InitOk v-else-if="initState === 'ok'" />
-      <InitClosed v-else />
+      <Home v-if="status === 'home'" />
+      <Unsupport v-else-if="status === 'unsupport'" />
+      <SendFile v-else-if="status === 'send'" />
     </Transition>
   </div>
 </template>

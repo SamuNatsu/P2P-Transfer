@@ -1,22 +1,20 @@
 <script lang="ts" setup>
+import { useTitle } from '@vueuse/core';
 import { onBeforeMount, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { setupI18n } from '@/i18n';
-import { useTitle } from '@vueuse/core';
 
-// Stores
-import { useStore } from '@/stores';
+import { setupI18n } from '@/i18n';
 
 // Components
 import AppHeader from '@/components/app/AppHeader.vue';
 import AppFooter from '@/components/app/AppFooter.vue';
 import LanguageSelector from '@/components/LanguageSelector.vue';
+
 import { RouterView } from 'vue-router';
 
 // Injects
 const title = useTitle();
 const { locale, t } = useI18n();
-const { init } = useStore();
 
 // Watches
 watch(locale, (): void => {
@@ -24,15 +22,8 @@ watch(locale, (): void => {
 });
 
 // Hooks
-onBeforeMount(async (): Promise<void> => {
-  // Start initialize
-  init();
-
-  // Setup i18n
-  await setupI18n();
-
-  // Set title
-  title.value = t('title');
+onBeforeMount((): void => {
+  setupI18n();
 });
 </script>
 

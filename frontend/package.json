@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@vueuse/core": "^10.9.0",
+    "socket.io-client": "^4.7.5",
     "vite-svg-loader": "^5.1.0",
     "vue": "^3.4.25",
     "vue-i18n": "^9.13.1",

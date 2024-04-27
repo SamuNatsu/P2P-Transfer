@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { Ref, watch } from 'vue';
+
 import { SUPPORT_LOCALES, setLocale, useLocale } from '@/i18n';
 
 // Icons
