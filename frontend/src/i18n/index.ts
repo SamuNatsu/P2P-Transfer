@@ -40,15 +40,15 @@ export const i18n: I18n = createI18n({
   messages: { en, zh }
 });
 
-// Local locale
-const useLocalLocale = createGlobalState(() =>
+// Export local locale
+export const useLocale = createGlobalState(() =>
   useLocalStorage<string | undefined>('language', undefined)
 );
 
 // Setup i18n
 export const setupI18n = async (): Promise<void> => {
   // Get local storage locale
-  const locale: Ref<string | undefined> = useLocalLocale();
+  const locale: Ref<string | undefined> = useLocale();
 
   // Get browser language
   const { language } = useNavigatorLanguage();
@@ -100,7 +100,7 @@ export const setLocale = async (locale: string): Promise<void> => {
     await loadMessages(match[0][0]);
 
     // Set locale
-    useLocalLocale().value = match[0][0];
+    useLocale().value = match[0][0];
     (i18n.global.locale as Ref<string>).value = match[0][0];
     document.documentElement.setAttribute('lang', match[0][0]);
 
@@ -109,7 +109,7 @@ export const setLocale = async (locale: string): Promise<void> => {
     console.debug(`[i18n] Locale "${locale}" not support`);
 
     // Set locale
-    useLocalLocale().value = 'en';
+    useLocale().value = 'en';
     (i18n.global.locale as Ref<string>).value = 'en';
     document.documentElement.setAttribute('lang', 'en');
 

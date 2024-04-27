@@ -8,7 +8,7 @@
     "server_connected": "サーバー接続中",
     "send_file": "ファイル送信",
     "receive_file": "ファイル受信",
-    "reselect_file": "ファイル再選択",
+    "back": "戻る",
     "file_name": "ファイルネーム",
     "file_size": "ファイルサイズ",
     "start_sending": "送信開始",

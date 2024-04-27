@@ -8,10 +8,10 @@ import { useTitle } from '@vueuse/core';
 import { useStore } from '@/stores';
 
 // Components
-import { RouterView } from 'vue-router';
-import AppHeader from '@/components/AppHeader.vue';
+import AppHeader from '@/components/app/AppHeader.vue';
+import AppFooter from '@/components/app/AppFooter.vue';
 import LanguageSelector from '@/components/LanguageSelector.vue';
-import AppFooter from '@/components/AppFooter.vue';
+import { RouterView } from 'vue-router';
 
 // Injects
 const title = useTitle();
@@ -39,7 +39,7 @@ onBeforeMount(async (): Promise<void> => {
 <template>
   <AppHeader />
   <LanguageSelector />
-  <div class="flex flex-col items-center relative">
+  <div class="flex flex-col items-center relative w-full">
     <RouterView v-slot="{ Component }">
       <Transition>
         <KeepAlive>
@@ -54,15 +54,15 @@ onBeforeMount(async (): Promise<void> => {
 <style scoped>
 .v-enter-active,
 .v-leave-active {
-  transition: opacity 0.25s ease;
+  @apply transition-opacity;
 }
 
 .v-enter-from,
 .v-leave-to {
-  opacity: 0;
+  @apply opacity-0;
 }
 
 .v-leave-active {
-  position: absolute;
+  @apply absolute;
 }
 </style>

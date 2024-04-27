@@ -8,7 +8,7 @@
     "server_connected": "Server connected",
     "send_file": "Send File",
     "receive_file": "Receive File",
-    "reselect_file": "Reselect File",
+    "back": "Back",
     "file_name": "File Name",
     "file_size": "File Size",
     "start_sending": "Start Sending",
@@ -26,5 +26,15 @@
   "fail": {
     "unsupport": "Browser unsupport WebSocket or WebRTC",
     "connect_to_server": "Fail to connect to server"
+  },
+  "status": {
+    "idle": "Idle",
+    "registering": "Registering",
+    "waiting": "Waiting",
+    "negotiating": "Negotiating",
+    "transfering": "Transfering",
+    "finished": "Finished",
+    "failed": "Failed",
+    "interrupted": "Interrupted"
   }
 }

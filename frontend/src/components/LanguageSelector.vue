@@ -1,17 +1,16 @@
 <script lang="ts" setup>
 import { Ref, watch } from 'vue';
-import { useLocalStorage } from '@vueuse/core';
-import { SUPPORT_LOCALES, setLocale } from '@/i18n';
+import { SUPPORT_LOCALES, setLocale, useLocale } from '@/i18n';
 
-// Components
+// Icons
 import MdiLanguage from '~icons/mdi/language';
 
 // Injects
-const language: Ref<string> = useLocalStorage('language', '');
+const locale: Ref<string | undefined> = useLocale();
 
 // Watches
-watch(language, (): void => {
-  setLocale(language.value);
+watch(locale, (): void => {
+  setLocale(locale.value!);
 });
 </script>
 
@@ -19,9 +18,7 @@ watch(language, (): void => {
   <div
     class="bg-neutral-700 flex gap-2 items-center mt-4 px-2 py-1 rounded hover:bg-neutral-600">
     <MdiLanguage class="text-2xl" />
-    <select
-      v-model="language"
-      class="bg-transparent cursor-pointer outline-none">
+    <select v-model="locale" class="bg-transparent cursor-pointer outline-none">
       <option
         v-for="{ locale, display } in SUPPORT_LOCALES"
         class="text-black"
