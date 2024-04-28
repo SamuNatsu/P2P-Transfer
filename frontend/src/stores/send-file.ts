@@ -3,7 +3,7 @@ import { createGlobalState } from '@vueuse/core';
 import { ComputedRef, Ref, computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { Socket, io } from 'socket.io-client';
+import { Sender } from '@/utils/sender';
 
 // External stores
 import { useStore } from '@/stores';
@@ -27,10 +27,9 @@ export const useSendFileStore = createGlobalState(() => {
     | 'interrupted'
   > = ref('idle');
   const code: Ref<string | null> = ref(null);
+  const recvBytes: Ref<number> = ref(0);
 
-  let _sessionId: string | null = null;
-  let _peerId: string | null = null;
-  let _socket: Socket | null = null;
+  let _sender: Sender | null = null;
 
   /// Getters
   const fileSize: ComputedRef<string> = computed((): string =>
@@ -39,16 +38,18 @@ export const useSendFileStore = createGlobalState(() => {
   const statusStr: ComputedRef<string> = computed((): string =>
     t('status.' + status.value)
   );
+  const percent: ComputedRef<number> = computed((): number =>
+    file.value === null ? 0 : recvBytes.value / file.value.size
+  );
 
   /// Actions
   const resetStore = (): void => {
     file.value = null;
     status.value = 'idle';
     code.value = null;
+    recvBytes.value = 0;
 
-    _sessionId = null;
-    _peerId = null;
-    _socket = null;
+    _sender = null;
   };
   const selectFile = (): void => {
     resetStore();
@@ -63,40 +64,32 @@ export const useSendFileStore = createGlobalState(() => {
     el.click();
   };
   const cleanup = (): void => {
-    if (_socket !== null) {
-      _socket.disconnect();
-      _socket = null;
-    }
+    _sender = null;
   };
   const start = (): void => {
     status.value = 'connecting';
 
-    _socket = io({
-      auth: { sessionId: _sessionId },
-      path: '/ws',
-      reconnectionAttempts: 5
-    });
-    _socket.io.on('reconnect_failed', (): void => {
+    // Create sender
+    _sender = new Sender(file.value!);
+    _sender.on('failed', (_reason: string): void => {
       status.value = 'failed';
     });
-    _socket.on('session', (sessionId: string): void => {
-      _sessionId = sessionId;
+    _sender.on('registered', (recvCode: string): void => {
+      code.value = recvCode;
+      status.value = 'waiting';
     });
-    _socket.on('peer', (peerId: string): void => {
-      _peerId = peerId;
+    _sender.on('negotiate', (): void => {
       status.value = 'negotiating';
     });
-
-    // Register session
-    _socket.emit(
-      'register',
-      file.value!.name,
-      file.value!.size,
-      (receiveCode: string): void => {
-        code.value = receiveCode;
-        status.value = 'waiting';
-      }
-    );
+    _sender.on('start', (): void => {
+      status.value = 'transfering';
+    });
+    _sender.on('progress', (recv: number): void => {
+      recvBytes.value = recv;
+    });
+    _sender.on('finished', (): void => {
+      status.value = 'finished';
+    });
   };
   const interrupt = (): void => {
     cleanup();
@@ -110,6 +103,7 @@ export const useSendFileStore = createGlobalState(() => {
     code,
     fileSize,
     statusStr,
+    percent,
     selectFile,
     cleanup,
     start,

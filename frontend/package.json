@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "renew:stun": "curl -o src/assets/stun-servers.txt https://cdn.jsdelivr.net/gh/pradt2/always-online-stun@master/valid_ipv4s.txt"
   },
   "dependencies": {
     "@vueuse/core": "^10.9.0",
+    "eventemitter3": "^5.0.1",
     "socket.io-client": "^4.7.5",
     "vite-svg-loader": "^5.1.0",
     "vue": "^3.4.25",

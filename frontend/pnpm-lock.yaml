@@ -11,6 +11,9 @@ importers:
       '@vueuse/core':
         specifier: ^10.9.0
         version: 10.9.0(vue@3.4.25(typescript@5.4.5))
+      eventemitter3:
+        specifier: ^5.0.1
+        version: 5.0.1
       socket.io-client:
         specifier: ^4.7.5
         version: 4.7.5
@@ -679,6 +682,9 @@ packages:
 
   estree-walker@2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
+
+  eventemitter3@5.0.1:
+    resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
 
   execa@5.1.1:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
@@ -1875,6 +1881,8 @@ snapshots:
   escalade@3.1.2: {}
 
   estree-walker@2.0.2: {}
+
+  eventemitter3@5.0.1: {}
 
   execa@5.1.1:
     dependencies:
