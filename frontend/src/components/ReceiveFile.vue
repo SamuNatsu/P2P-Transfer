@@ -17,7 +17,9 @@ import { useRecvFileStore } from '@/stores/recv-file';
 
 // Icons
 import MdiArrowBackCircle from '~icons/mdi/arrow-back-circle';
+import MdiCheckBold from '~icons/mdi/check-bold';
 import MdiCheckCircleOutline from '~icons/mdi/check-circle-outline';
+import MdiContentSave from '~icons/mdi/content-save';
 import MdiStopRemoveOutline from '~icons/mdi/stop-remove-outline';
 
 // Injects
@@ -37,13 +39,16 @@ const {
 
   interrupt,
   resetStore,
+  saveMem,
+  saveStream,
   start
 } = useRecvFileStore();
 
 // Reactive
 const inputRef: Ref<HTMLInputElement | undefined> = ref();
 const recvCode: Ref<string> = ref('');
-const confirmed: Ref<boolean> = ref(false);
+const comStatus: Ref<'waiting' | 'transfering' | 'saving'> = ref('waiting');
+const busy: Ref<boolean> = ref(false);
 
 // Computed
 const statusCls: ComputedRef<string> = computed((): string => {
@@ -75,8 +80,20 @@ const confirm = (): void => {
     return;
   }
 
-  confirmed.value = true;
+  comStatus.value = 'transfering';
   start(recvCode.value);
+};
+const memorySave = (): void => {
+  busy.value = true;
+  saveMem().then((): void => {
+    mainStatus.value = 'home';
+  });
+};
+const streamSave = (): void => {
+  busy.value = true;
+  saveStream().then((): void => {
+    mainStatus.value = 'home';
+  });
 };
 
 // Hooks
@@ -94,7 +111,7 @@ onMounted((): void => {
 <template>
   <div>
     <div
-      v-if="!confirmed"
+      v-if="comStatus === 'waiting'"
       class="fixed flex inset-0 items-center justify-center p-8 -z-50">
       <div class="flex flex-col items-center">
         <h1 class="font-bold text-2xl">{{ $t('index.input_code') }}</h1>
@@ -120,7 +137,7 @@ onMounted((): void => {
       </div>
     </div>
     <div
-      v-if="confirmed"
+      v-if="comStatus !== 'waiting'"
       class="flex flex-wrap gap-4 items-center justify-center mt-12 mx-4">
       <button
         v-if="['idle', 'finished', 'failed', 'interrupted'].includes(status)"
@@ -136,9 +153,16 @@ onMounted((): void => {
         <MdiStopRemoveOutline class="text-2xl" />
         <span>{{ $t('btn.interrupt') }}</span>
       </button>
+      <button
+        v-if="status === 'finished' && comStatus === 'transfering'"
+        @click="comStatus = 'saving'"
+        class="bg-green-500 flex gap-2 items-center px-4 py-2 rounded hover:bg-green-600">
+        <MdiContentSave class="text-2xl" />
+        <span>{{ $t('btn.save_file') }}</span>
+      </button>
     </div>
     <div
-      v-if="confirmed"
+      v-if="comStatus === 'transfering'"
       class="bg-neutral-700 mt-4 mx-4 p-2 rounded lg:max-w-3xl">
       <table>
         <tbody>
@@ -193,6 +217,43 @@ onMounted((): void => {
           </tr>
         </tbody>
       </table>
+    </div>
+    <div
+      v-if="comStatus === 'saving'"
+      class="bg-neutral-700 mt-4 mx-4 p-2 rounded lg:max-w-3xl">
+      <button
+        @click="memorySave"
+        class="bg-blue-500 flex float-right gap-2 items-center mt-2 px-2 py-1 rounded disabled:bg-neutral-500 enabled:hover:bg-blue-600"
+        :disabled="busy">
+        <MdiCheckBold />
+      </button>
+      <h1 class="font-bold my-2 text-xl">{{ $t('index.use_memory') }}</h1>
+      <p>{{ $t('index.saving.text[0]') }}</p>
+      <p>
+        <b>{{ $t('index.saving.pros') }}</b
+        >{{ $t('index.saving.text[1]') }}
+      </p>
+      <p>
+        <b>{{ $t('index.saving.cons') }}</b
+        >{{ $t('index.saving.text[2]') }}
+      </p>
+      <hr class="border-t-2 border-dashed my-4" />
+      <button
+        @click="streamSave"
+        class="bg-blue-500 flex float-right gap-2 items-center mt-2 px-2 py-1 rounded disabled:bg-neutral-500 enabled:hover:bg-blue-600"
+        :disabled="busy">
+        <MdiCheckBold />
+      </button>
+      <h1 class="font-bold my-2 text-xl">{{ $t('index.use_stream') }}</h1>
+      <p>{{ $t('index.saving.text[3]') }}</p>
+      <p>
+        <b>{{ $t('index.saving.pros') }}</b
+        >{{ $t('index.saving.text[4]') }}
+      </p>
+      <p>
+        <b>{{ $t('index.saving.cons') }}</b
+        >{{ $t('index.saving.text[5]') }}
+      </p>
     </div>
   </div>
 </template>

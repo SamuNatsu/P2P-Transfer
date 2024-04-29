@@ -5,13 +5,20 @@ import { P2P_CONNECTION_COUNT, P2P_ICE_SERVERS } from '@/utils/p2p';
 import { cache } from '@/utils/p2p/p2p-cache';
 
 /**
- * Events:
+ * Emit events:
  *
  * error: (reason)
  * candidate: (index, candidate)
  * offer: (index, offer)
  * start: ()
  * progress: (recvBytes)
+ */
+
+/**
+ * On events:
+ *
+ * addcandidate: (index, candidate)
+ * answer: (index, offer)
  */
 
 // Export class
@@ -31,7 +38,7 @@ export class P2PReceiver extends EventEmitter {
 
       // ICE candidate listener
       this.on(
-        'candidate',
+        'addcandidate',
         async (idx: number, candidate: RTCIceCandidate): Promise<void> => {
           try {
             // Add ICE candidate

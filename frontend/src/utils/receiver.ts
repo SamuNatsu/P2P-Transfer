@@ -6,7 +6,7 @@ import { P2PReceiver } from '@/utils/p2p/p2p-receiver';
 import { cache } from '@/utils/p2p/p2p-cache';
 
 /**
- * Events:
+ * Emit events:
  *
  * failed: (reason)
  * start: ()
@@ -67,7 +67,7 @@ export class Receiver extends EventEmitter {
     this.socket.on(
       'candidate',
       (idx: number, candidate: RTCIceCandidate): void => {
-        this.receiver!.emit('candidate', idx, candidate);
+        this.receiver!.emit('addcandidate', idx, candidate);
       }
     );
 

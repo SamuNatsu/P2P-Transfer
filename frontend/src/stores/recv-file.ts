@@ -4,6 +4,7 @@ import { ComputedRef, Ref, computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { Receiver } from '@/utils/receiver';
+import { cache } from '@/utils/p2p/p2p-cache';
 
 // External stores
 import { formatNumber, formatTime } from '@/stores';
@@ -70,6 +71,12 @@ export const useRecvFileStore = createGlobalState(() => {
 
     cleanup();
   };
+  const saveMem = async (): Promise<void> => {
+    await cache.memoryDownload(fileName.value);
+  };
+  const saveStream = async (): Promise<void> => {
+    await cache.streamDownload(fileName.value, fileSize.value);
+  };
   const start = (code: string): void => {
     status.value = 'connecting';
 
@@ -119,6 +126,8 @@ export const useRecvFileStore = createGlobalState(() => {
 
     interrupt,
     resetStore,
+    saveMem,
+    saveStream,
     start
   };
 });

@@ -8,6 +8,7 @@
     "confirm": "確認",
     "interrupt": "中断",
     "receive_file": "ファイル受信",
+    "save_file": "保存ファイル",
     "send_file": "ファイル送信",
     "start_sending": "送信開始"
   },
@@ -20,7 +21,9 @@
     "receive_code": "受信コード",
     "speed": "スピード",
     "status": "ステータス",
-    "time_left": "残り時間"
+    "time_left": "残り時間",
+    "use_memory": "Memory Saving を使用する",
+    "use_stream": "Stream Saving を使用する"
   },
   "fail": {
     "unsupport": "ブラウザが WebRTC をサポートしていない",

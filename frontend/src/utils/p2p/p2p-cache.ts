@@ -1,5 +1,6 @@
 /// P2P cache
 import Dexie, { Table } from 'dexie';
+import streamSaver from 'streamsaver';
 
 import { P2P_CONNECTION_COUNT } from '@/utils/p2p';
 
@@ -9,6 +10,9 @@ export interface DataBlock {
   ch: number;
   data: ArrayBuffer;
 }
+
+// Config
+streamSaver.mitm = import.meta.env.BASE_URL + 'mitm.html?version=2.0.0';
 
 // Export class
 export class P2PCache extends Dexie {
@@ -43,6 +47,48 @@ export class P2PCache extends Dexie {
 
       console.debug(`[cache] Packets from channel #${i}: ${count}`);
     }
+  }
+
+  /// Memory download
+  public async memoryDownload(name: string): Promise<void> {
+    const blocks: ArrayBuffer[] = [];
+
+    for (let i = 0; true; i++) {
+      const block: DataBlock | undefined = await this.dataBlocks.get({ id: i });
+      if (block === undefined) {
+        break;
+      }
+
+      blocks.push(block.data);
+    }
+    this.clear();
+
+    const blob: Blob = new Blob(blocks);
+    const url: string = URL.createObjectURL(blob);
+
+    const el: HTMLAnchorElement = document.createElement('a');
+    el.download = name;
+    el.href = url;
+    el.click();
+  }
+
+  /// Stream download
+  public async streamDownload(name: string, size: number): Promise<void> {
+    const stream: WritableStream = streamSaver.createWriteStream(name, {
+      size
+    });
+    const writer: WritableStreamDefaultWriter = stream.getWriter();
+
+    for (let i = 0; true; i++) {
+      const block: DataBlock | undefined = await this.dataBlocks.get({ id: i });
+      if (block === undefined) {
+        break;
+      }
+
+      await writer.write(new Uint8Array(block.data));
+    }
+    this.clear();
+    await writer.close();
   }
 }
 

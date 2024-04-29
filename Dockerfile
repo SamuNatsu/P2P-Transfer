@@ -8,7 +8,7 @@ WORKDIR /app
 COPY ./dist /app
 
 # Install dependences
-RUN npm install --production
+RUN npm install --omit=dev
 
 # Expose port
 EXPOSE 3000

@@ -9,6 +9,7 @@
     "confirm": "Confirm",
     "interrupt": "Interrupt",
     "receive_file": "Receive File",
+    "save_file": "Save File",
     "send_file": "Send File",
     "start_sending": "Start Sending"
   },
@@ -21,7 +22,21 @@
     "receive_code": "Receive Code",
     "speed": "Speed",
     "status": "Status",
-    "time_left": "Time Left"
+    "time_left": "Time Left",
+    "use_memory": "Use Memory Saving",
+    "use_stream": "Use Stream Saving",
+    "saving": {
+      "cons": "Cons: ",
+      "pros": "Pros: ",
+      "text": [
+        "Use RAM merge file slices into a whole file for downloading",
+        "Best compatibility",
+        "Heavy RAM usage, sometimes (file size ≥ 2GB) may fail to save",
+        "Use steam to proxy file slices to browser's download module",
+        "No limitations on file size",
+        "Bad compatibility, DONOT use download manager to handling download"
+      ]
+    }
   },
   "about": [
     "Transfer files through browser <a href=\"https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API\" rel=\"noopener noreferer\" target=\"_blank\">WebRTC</a>",

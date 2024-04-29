@@ -9,13 +9,20 @@ import {
 } from '@/utils/p2p';
 
 /**
- * Events:
+ * Emit events:
  *
  * error: (reason)
  * candidate: (index, candidate)
  * answer: (index, answer)
  * start: ()
  * progress: (recvBytes)
+ */
+
+/**
+ * On events:
+ * 
+ * addcandidate: (index, candidate)
+ * offer: (index, offer)
  */
 
 // Export class
@@ -36,7 +43,7 @@ export class P2PSender extends EventEmitter {
 
     // ICE candidate listener
     this.on(
-      'candidate',
+      'addcandidate',
       async (idx: number, candidate: RTCIceCandidate): Promise<void> => {
         try {
           // Add ICE candidate

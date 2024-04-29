@@ -55,7 +55,18 @@ export const wsServer: Server = new Server(httpServer, {
 // Use default middlewares
 app
   .use(compression())
-  .use(helmet())
+  .use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          'script-src': [
+            "'self'",
+            "'sha256-uk/nysP2R9cLUyOA92YsgEyomGCZC2iZ76cB9/WV2uo='"
+          ]
+        }
+      }
+    })
+  )
   .use(
     (
       req: express.Request,

@@ -67,7 +67,7 @@ export class Sender extends EventEmitter {
     this.socket.on(
       'candidate',
       (idx: number, candidate: RTCIceCandidate): void => {
-        this.sender!.emit('candidate', idx, candidate);
+        this.sender!.emit('addcandidate', idx, candidate);
       }
     );
 

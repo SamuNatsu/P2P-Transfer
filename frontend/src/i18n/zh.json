@@ -9,6 +9,7 @@
     "confirm": "确认",
     "interrupt": "中断",
     "receive_file": "接收文件",
+    "save_file": "保存文件",
     "send_file": "发送文件",
     "start_sending": "开始发送"
   },
@@ -21,7 +22,21 @@
     "receive_code": "取件码",
     "speed": "速率",
     "status": "状态",
-    "time_left": "剩余时间"
+    "time_left": "剩余时间",
+    "use_memory": "使用内存保存",
+    "use_stream": "使用数据流保存",
+    "saving": {
+      "cons": "缺点：",
+      "pros": "优点：",
+      "text": [
+        "利用 RAM 将文件分块合成为完整文件下载",
+        "兼容性好，几乎支持所有设备",
+        "会导致内存占用激增，文件过大（≥ 2GB）时还可能无法保存",
+        "使用流处理技术将文件分块代理给浏览器下载",
+        "没有文件大小限制",
+        "兼容性差，你不能使用下载管理器，请使用浏览器原生下载系统"
+      ]
+    }
   },
   "about": [
     "通过浏览器 <a href=\"https://developer.mozilla.org/zh-CN/docs/Web/API/WebRTC_API\" rel=\"noopener noreferer\" target=\"_blank\">WebRTC</a> 来分享文件",
