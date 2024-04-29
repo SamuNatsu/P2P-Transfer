@@ -54,4 +54,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Push image to Docket Hub
-        run: docker push snrainiar/p2p-transfer:$(date +%s)
+        run: docker push snrainiar/p2p-transfer:latest
