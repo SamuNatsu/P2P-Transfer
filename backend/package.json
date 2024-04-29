@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "rollup -c rollup.config.ts --configPlugin @rollup/plugin-typescript",
-    "start": "node dist/server.esm.min.js",
+    "start": "node server.esm.min.js",
     "test": "LOG_LV=10 node dist/server.esm.js"
   },
   "devDependencies": {
