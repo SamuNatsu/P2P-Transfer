@@ -1,29 +1,27 @@
-/// Send file store module
+/// Receive file store module
 import { createGlobalState } from '@vueuse/core';
 import { ComputedRef, Ref, computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { Sender } from '@/utils/sender';
+import { Receiver } from '@/utils/receiver';
 
 // External stores
-import { formatNumber, formatTime, useStore } from '@/stores';
+import { formatNumber, formatTime } from '@/stores';
 
 // Export store
-export const useSendFileStore = createGlobalState(() => {
+export const useRecvFileStore = createGlobalState(() => {
   /// Injects
   const { t } = useI18n();
-  const { status: mainStatus } = useStore();
 
   /// States
-  const code: Ref<string | null> = ref(null);
   const failReason: Ref<string> = ref('');
-  const file: Ref<File | null> = ref(null);
+  const fileName: Ref<string> = ref('');
+  const fileSize: Ref<number> = ref(0);
   const recvBytes: Ref<number> = ref(0);
   const speed: Ref<number> = ref(0);
   const status: Ref<
     | 'idle'
     | 'connecting'
-    | 'waiting'
     | 'negotiating'
     | 'transfering'
     | 'finished'
@@ -32,17 +30,17 @@ export const useSendFileStore = createGlobalState(() => {
   > = ref('idle');
   const time: Ref<number> = ref(0);
 
-  let _sender: Sender | null = null;
+  let _receiver: Receiver | null = null;
 
   /// Getters
   const failReasonStr: ComputedRef<string> = computed((): string =>
     t('fail.' + failReason.value)
   );
-  const fileSize: ComputedRef<string> = computed((): string =>
-    file.value === null ? '' : formatNumber(file.value.size, 'B')
+  const fileSizeStr: ComputedRef<string> = computed((): string =>
+    formatNumber(fileSize.value, 'B')
   );
   const percent: ComputedRef<number> = computed((): number =>
-    file.value === null ? 0 : recvBytes.value / file.value.size
+    fileSize.value === 0 ? 0 : recvBytes.value / fileSize.value
   );
   const speedStr: ComputedRef<string> = computed((): string =>
     formatNumber(speed.value, 'B/s')
@@ -56,40 +54,28 @@ export const useSendFileStore = createGlobalState(() => {
 
   /// Actions
   const cleanup = (): void => {
-    _sender?.cleanup();
-    _sender = null;
+    _receiver?.cleanup();
+    _receiver = null;
   };
   const interrupt = (): void => {
     status.value = 'interrupted';
     cleanup();
   };
   const resetStore = (): void => {
-    file.value = null;
     status.value = 'idle';
-    code.value = null;
+    fileName.value = '';
+    fileSize.value = 0;
     recvBytes.value = 0;
     failReason.value = '';
 
     cleanup();
   };
-  const selectFile = (): void => {
-    resetStore();
-
-    const el: HTMLInputElement = document.createElement('input');
-    el.type = 'file';
-    el.addEventListener('change', (): void => {
-      file.value = el.files![0];
-
-      mainStatus.value = 'send';
-    });
-    el.click();
-  };
-  const start = (): void => {
+  const start = (code: string): void => {
     status.value = 'connecting';
 
     // Create sender
-    _sender = new Sender(file.value!);
-    _sender.on('failed', (reason: string): void => {
+    _receiver = new Receiver(code);
+    _receiver.on('failed', (reason: string): void => {
       if (
         ['idle', 'finished', 'failed', 'interrupted'].includes(status.value)
       ) {
@@ -98,36 +84,34 @@ export const useSendFileStore = createGlobalState(() => {
       status.value = 'failed';
       failReason.value = reason;
     });
-    _sender.on('registered', (recvCode: string): void => {
-      code.value = recvCode;
-      status.value = 'waiting';
-    });
-    _sender.on('negotiate', (): void => {
+    _receiver.on('requested', (name: string, size: number): void => {
+      fileName.value = name;
+      fileSize.value = size;
       status.value = 'negotiating';
     });
-    _sender.on('start', (): void => {
+    _receiver.on('start', (): void => {
       status.value = 'transfering';
     });
-    _sender.on('progress', (recv: number): void => {
+    _receiver.on('progress', (recv: number): void => {
       recvBytes.value = recv;
     });
-    _sender.on('statistic', (curSpeed: number, timeLeft: number): void => {
+    _receiver.on('statistic', (curSpeed: number, timeLeft: number): void => {
       speed.value = curSpeed;
       time.value = timeLeft;
     });
-    _sender.on('finished', (): void => {
+    _receiver.on('finished', (): void => {
       status.value = 'finished';
     });
   };
 
   /// Return store
   return {
-    code,
-    file,
+    fileName,
+    fileSize,
     status,
 
     failReasonStr,
-    fileSize,
+    fileSizeStr,
     percent,
     speedStr,
     statusStr,
@@ -135,7 +119,6 @@ export const useSendFileStore = createGlobalState(() => {
 
     interrupt,
     resetStore,
-    selectFile,
     start
   };
 });

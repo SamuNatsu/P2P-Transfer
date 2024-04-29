@@ -1,24 +1,35 @@
 <script lang="ts" setup>
-import { ComputedRef, computed, onBeforeUnmount } from 'vue';
+import {
+  ComputedRef,
+  Ref,
+  computed,
+  onBeforeMount,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch
+} from 'vue';
+import { useI18n } from 'vue-i18n';
 
 // Stores
 import { useStore } from '@/stores';
-import { useSendFileStore } from '@/stores/send-file';
+import { useRecvFileStore } from '@/stores/recv-file';
 
 // Icons
 import MdiArrowBackCircle from '~icons/mdi/arrow-back-circle';
-import MdiRocketLaunchOutline from '~icons/mdi/rocket-launch-outline';
+import MdiCheckCircleOutline from '~icons/mdi/check-circle-outline';
 import MdiStopRemoveOutline from '~icons/mdi/stop-remove-outline';
 
 // Injects
+const { t } = useI18n();
 const { status: mainStatus } = useStore();
 const {
-  code,
-  file,
+  fileName,
+  fileSize,
   status,
 
   failReasonStr,
-  fileSize,
+  fileSizeStr,
   percent,
   speedStr,
   statusStr,
@@ -27,7 +38,12 @@ const {
   interrupt,
   resetStore,
   start
-} = useSendFileStore();
+} = useRecvFileStore();
+
+// Reactive
+const inputRef: Ref<HTMLInputElement | undefined> = ref();
+const recvCode: Ref<string> = ref('');
+const confirmed: Ref<boolean> = ref(false);
 
 // Computed
 const statusCls: ComputedRef<string> = computed((): string => {
@@ -36,8 +52,6 @@ const statusCls: ComputedRef<string> = computed((): string => {
       return 'text-neutral-400';
     case 'connecting':
       return 'text-yellow-400';
-    case 'waiting':
-      return 'text-blue-400';
     case 'negotiating':
       return 'text-purple-400';
     case 'transfering':
@@ -49,28 +63,71 @@ const statusCls: ComputedRef<string> = computed((): string => {
   }
 });
 
+// Watches
+watch(recvCode, (): void => {
+  recvCode.value = recvCode.value.replace(/[^0-9a-zA-Z]/g, '').slice(0, 8);
+});
+
+// Actions
+const confirm = (): void => {
+  if (recvCode.value.length !== 8) {
+    alert(t('fail.invalid_code'));
+    return;
+  }
+
+  confirmed.value = true;
+  start(recvCode.value);
+};
+
 // Hooks
+onBeforeMount((): void => {
+  resetStore();
+});
 onBeforeUnmount((): void => {
   resetStore();
+});
+onMounted((): void => {
+  inputRef.value!.focus();
 });
 </script>
 
 <template>
   <div>
-    <div class="flex flex-wrap gap-4 items-center justify-center mt-12 mx-4">
+    <div
+      v-if="!confirmed"
+      class="fixed flex inset-0 items-center justify-center p-8 -z-50">
+      <div class="flex flex-col items-center">
+        <h1 class="font-bold text-2xl">{{ $t('index.input_code') }}</h1>
+        <input
+          v-model="recvCode"
+          class="bg-transparent border-b-2 border-b-blue-400 font-bold mt-8 outline-none p-2 text-blue-400 text-center text-2xl w-60"
+          ref="inputRef"
+          type="text" />
+        <div class="flex flex-wrap gap-4 items-center justify-center mt-4 mx-4">
+          <button
+            @click="mainStatus = 'home'"
+            class="bg-red-500 flex gap-2 items-center px-4 py-2 rounded hover:bg-red-400">
+            <MdiArrowBackCircle class="text-2xl" />
+            <span>{{ $t('btn.back') }}</span>
+          </button>
+          <button
+            @click="confirm"
+            class="bg-green-500 flex gap-2 items-center px-4 py-2 rounded hover:bg-green-400">
+            <MdiCheckCircleOutline class="text-2xl" />
+            <span class="font-bold">{{ $t('btn.confirm') }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      v-if="confirmed"
+      class="flex flex-wrap gap-4 items-center justify-center mt-12 mx-4">
       <button
         v-if="['idle', 'finished', 'failed', 'interrupted'].includes(status)"
         @click="mainStatus = 'home'"
         class="bg-red-500 flex gap-2 items-center px-4 py-2 rounded hover:bg-red-400">
         <MdiArrowBackCircle class="text-2xl" />
         <span>{{ $t('btn.back') }}</span>
-      </button>
-      <button
-        v-if="status === 'idle'"
-        @click="start"
-        class="bg-cyan-500 flex gap-2 items-center px-4 py-2 rounded hover:bg-cyan-600">
-        <MdiRocketLaunchOutline class="text-2xl" />
-        <span>{{ $t('btn.start_sending') }}</span>
       </button>
       <button
         v-if="!['idle', 'finished', 'failed', 'interrupted'].includes(status)"
@@ -80,21 +137,23 @@ onBeforeUnmount((): void => {
         <span>{{ $t('btn.interrupt') }}</span>
       </button>
     </div>
-    <div class="bg-neutral-700 mt-4 mx-4 p-2 rounded lg:max-w-3xl">
+    <div
+      v-if="confirmed"
+      class="bg-neutral-700 mt-4 mx-4 p-2 rounded lg:max-w-3xl">
       <table>
         <tbody>
           <tr>
             <th class="text-left pr-4 whitespace-nowrap">
               {{ $t('index.file_name') }}
             </th>
-            <td class="break-all">{{ file!.name }}</td>
+            <td class="break-all">{{ fileName }}</td>
           </tr>
           <tr>
             <th class="text-left pr-4 whitespace-nowrap">
               {{ $t('index.file_size') }}
             </th>
-            <td :title="file!.size.toString() + ' Byte(s)'">
-              {{ fileSize }}
+            <td :title="fileSize.toString() + ' Byte(s)'">
+              {{ fileSizeStr }}
             </td>
           </tr>
           <tr>
@@ -102,12 +161,6 @@ onBeforeUnmount((): void => {
               {{ $t('index.status') }}
             </th>
             <td :class="statusCls">{{ statusStr }}</td>
-          </tr>
-          <tr v-if="code !== null">
-            <th class="text-left pr-4 whitespace-nowrap">
-              {{ $t('index.receive_code') }}
-            </th>
-            <td>{{ code }}</td>
           </tr>
           <tr v-if="status === 'transfering'">
             <th class="text-left pr-4 whitespace-nowrap">

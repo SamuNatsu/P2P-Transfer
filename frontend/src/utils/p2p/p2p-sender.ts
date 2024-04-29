@@ -8,9 +8,20 @@ import {
   P2P_PACKET_SIZE
 } from '@/utils/p2p';
 
+/**
+ * Events:
+ *
+ * error: (reason)
+ * candidate: (index, candidate)
+ * answer: (index, answer)
+ * start: ()
+ * progress: (recvBytes)
+ */
+
 // Export class
 export class P2PSender extends EventEmitter {
   private peers: RTCPeerConnection[] = [];
+  private failedPeerNum: number = 0;
   private channels: RTCDataChannel[] = [];
   private openedChanelNum: number = 0;
   private currentChannel: number = 0;
@@ -23,68 +34,6 @@ export class P2PSender extends EventEmitter {
   public constructor(private file: File, private key: CryptoKey) {
     super();
 
-    // Create connections
-    for (let i = 0; i < P2P_CONNECTION_COUNT; i++) {
-      // Create connection
-      const peer: RTCPeerConnection = new RTCPeerConnection({
-        iceServers: P2P_ICE_SERVERS
-      });
-      this.peers.push(peer);
-
-      // ICE candidate listener
-      peer.addEventListener(
-        'icecandidate',
-        (ev: RTCPeerConnectionIceEvent): void => {
-          if (ev.candidate !== null) {
-            this.emit('candidate', i, ev.candidate);
-          }
-        }
-      );
-
-      // Data channel
-      peer.addEventListener('datachannel', (ev: RTCDataChannelEvent): void => {
-        // Get channel
-        const channel: RTCDataChannel = ev.channel;
-        channel.binaryType = 'arraybuffer';
-        this.channels.push(channel);
-
-        // Error listener
-        channel.addEventListener('error', (): void => {
-          console.error(`[p2p-sender] Channel #${i} error`);
-          this.emit('error', 'channel');
-        });
-
-        // Open listener
-        channel.addEventListener('open', (): void => {
-          if (this.openedChanelNum === 0) {
-            // Read file block
-            this.reader.readAsArrayBuffer(file.slice(0, P2P_PACKET_SIZE));
-            this.fileOffset = P2P_PACKET_SIZE;
-
-            // Emit event
-            this.emit('start');
-          }
-          this.openedChanelNum++;
-        });
-
-        // Message listener
-        channel.addEventListener(
-          'message',
-          (ev: MessageEvent<ArrayBuffer>): void => {
-            const view: DataView = new DataView(ev.data);
-            const recvBytes: number = Number(view.getBigUint64(0));
-
-            if (recvBytes <= this.recvBytes) {
-              return;
-            }
-
-            this.recvBytes = recvBytes;
-            this.emit('progress', recvBytes);
-          }
-        );
-      });
-    }
-
     // ICE candidate listener
     this.on(
       'candidate',
@@ -93,8 +42,7 @@ export class P2PSender extends EventEmitter {
           // Add ICE candidate
           await this.peers[idx].addIceCandidate(candidate);
         } catch (err: unknown) {
-          console.error(`[p2p-sender] Connection #${idx} candidate error`);
-          this.emit('error', 'candidate');
+          this.emit('error', 'webrtc_candidate');
         }
       }
     );
@@ -119,11 +67,85 @@ export class P2PSender extends EventEmitter {
           // Emit event
           this.emit('answer', idx, answer);
         } catch {
-          console.error(`[p2p-sender] Connection #${idx} offer error`);
-          this.emit('error', 'offer');
+          this.emit('error', 'webrtc_offer');
         }
       }
     );
+
+    // Create connections
+    for (let i = 0; i < P2P_CONNECTION_COUNT; i++) {
+      // Create connection
+      const peer: RTCPeerConnection = new RTCPeerConnection({
+        iceServers: P2P_ICE_SERVERS
+      });
+      this.peers.push(peer);
+
+      // ICE candidate listener
+      peer.addEventListener(
+        'icecandidate',
+        (ev: RTCPeerConnectionIceEvent): void => {
+          if (ev.candidate !== null) {
+            this.emit('candidate', i, ev.candidate);
+          }
+        }
+      );
+
+      // Connection state change listener
+      peer.addEventListener('connectionstatechange', (): void => {
+        if (peer.connectionState === 'failed') {
+          this.failedPeerNum++;
+          if (this.failedPeerNum >= P2P_CONNECTION_COUNT) {
+            this.emit('error', 'webrtc_connection');
+          }
+        }
+      });
+
+      // Data channel
+      peer.addEventListener('datachannel', (ev: RTCDataChannelEvent): void => {
+        // Get channel
+        const channel: RTCDataChannel = ev.channel;
+        channel.binaryType = 'arraybuffer';
+
+        // Error listener
+        channel.addEventListener('error', (): void => {
+          this.emit('error', 'webrtc_channel');
+        });
+
+        // Open listener
+        channel.addEventListener('open', (): void => {
+          // Store channel
+          this.channels.push(channel);
+
+          if (this.openedChanelNum === 0) {
+            // Read file block
+            this.reader.readAsArrayBuffer(file.slice(0, P2P_PACKET_SIZE));
+            this.fileOffset = P2P_PACKET_SIZE;
+
+            // Emit event
+            this.emit('start');
+          }
+          this.openedChanelNum++;
+
+          console.debug(`[p2p-sender] Channel opened: ${i}`);
+        });
+
+        // Message listener
+        channel.addEventListener(
+          'message',
+          (ev: MessageEvent<ArrayBuffer>): void => {
+            const view: DataView = new DataView(ev.data);
+            const recvBytes: number = Number(view.getBigUint64(0));
+
+            if (recvBytes <= this.recvBytes) {
+              return;
+            }
+
+            this.recvBytes = recvBytes;
+            this.emit('progress', recvBytes);
+          }
+        );
+      });
+    }
 
     // Create reader
     this.reader = new FileReader();
@@ -145,7 +167,7 @@ export class P2PSender extends EventEmitter {
       data
     );
 
-    const ret: Uint8Array = new Uint8Array(24 + data.byteLength);
+    const ret: Uint8Array = new Uint8Array(24 + encData.byteLength);
     const view: DataView = new DataView(ret.buffer);
     view.setBigUint64(0, BigInt(this.packetId));
     ret.set(iv, 8);
@@ -169,7 +191,6 @@ export class P2PSender extends EventEmitter {
 
         // If no data left to be sent
         if (this.fileOffset >= this.file.size) {
-          this.emit('finished');
           return;
         }
 
@@ -188,5 +209,12 @@ export class P2PSender extends EventEmitter {
 
     // If no available
     setTimeout((): Promise<void> => this.sendData(data), 0);
+  }
+
+  /// Clean up
+  public cleanup(): void {
+    for (const i of this.peers) {
+      i.close();
+    }
   }
 }

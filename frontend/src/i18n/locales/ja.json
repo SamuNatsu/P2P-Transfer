@@ -1,23 +1,29 @@
 {
   "footer": {
-    "home": "ホーム",
-    "about": "サイトについて"
+    "about": "サイトについて",
+    "home": "ホーム"
   },
   "btn": {
-    "send_file": "ファイル送信",
-    "receive_file": "ファイル受信",
     "back": "戻る",
-    "start_sending": "送信開始",
-    "interrupt": "中断"
+    "confirm": "確認",
+    "interrupt": "中断",
+    "receive_file": "ファイル受信",
+    "send_file": "ファイル送信",
+    "start_sending": "送信開始"
   },
   "index": {
+    "fail_reason": "失敗理由",
     "file_name": "ファイルネーム",
     "file_size": "ファイルサイズ",
+    "input_code": "受信コード入力",
+    "progress": "進展",
+    "receive_code": "受信コード",
+    "speed": "スピード",
     "status": "ステータス",
-    "receive_code": "受信コード"
+    "time_left": "残り時間"
   },
   "fail": {
     "unsupport": "ブラウザが WebRTC をサポートしていない",
-    "connect_to_server": "シグナルサーバーへの接続に失敗"
+    "server": "シグナルサーバーへの接続に失敗"
   }
 }

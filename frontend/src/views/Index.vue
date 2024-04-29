@@ -4,6 +4,7 @@ import { useStore } from '@/stores';
 
 // Components
 import Home from '@/components/Home.vue';
+import ReceiveFile from '@/components/ReceiveFile.vue';
 import SendFile from '@/components/SendFile.vue';
 import Unsupport from '@/components/Unsupport.vue';
 
@@ -17,6 +18,7 @@ const { status } = useStore();
       <Home v-if="status === 'home'" />
       <Unsupport v-else-if="status === 'unsupport'" />
       <SendFile v-else-if="status === 'send'" />
+      <ReceiveFile v-else-if="status === 'receive'" />
     </Transition>
   </div>
 </template>

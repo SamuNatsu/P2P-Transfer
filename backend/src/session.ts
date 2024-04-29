@@ -55,12 +55,8 @@ export const handleSession = (socket: Socket): void => {
     );
   }
 
-  /// Set event listeners
+  /// Disconnect listener
   socket.on('disconnect', (reason: DisconnectReason): void => {
-    Logger.info(
-      `[WebSocket] Disconnected: ip=${socket.handshake.address}, reason=${reason}`
-    );
-
     // If not disconnected by server
     if (reason !== 'server namespace disconnect') {
       // Set destroy timeout for 10s
@@ -70,28 +66,70 @@ export const handleSession = (socket: Socket): void => {
         destroySession(sessionId);
       }, 10000);
     }
+
+    Logger.info(
+      `[WebSocket] Disconnected: ip=${socket.handshake.address}, reason=${reason}`
+    );
   });
 
+  /// Register listener
   socket.on(
     'register',
     (fileName: string, fileSize: number, callback: Function): void => {
-      Logger.info(
-        `[Session] Register: id=${sessionId}, name=${fileName}, size=${fileSize}`
-      );
-
       // Register data
       session.code = codeGen(8);
       session.fileName = fileName;
       session.fileSize = fileSize;
       session.key = crypto.randomBytes(32).toString('base64');
+      codes.set(session.code, sessionId);
 
       // Return code & key
       callback(session.code, session.key);
+
+      Logger.info(
+        `[Session] Registered: id=${sessionId}, name=${fileName}, size=${fileSize}, code=${session.code}, key=${session.key}`
+      );
     }
   );
-  socket.on('request', (code: string, callback: Function): void => {
-    Logger.info(`[Session] Request: id=${sessionId}, code=${code}`);
 
+  /// Candidate listener
+  socket.on('candidate', (idx: number, candidate: RTCIceCandidate): void => {
+    // If no peer
+    if (session.peer === undefined) {
+      return;
+    }
+
+    // Get peer session
+    const peerSession: Session = sessions.get(session.peer)!;
+
+    // Relay candidate
+    peerSession.socket.emit('candidate', idx, candidate);
+
+    Logger.info(
+      `[Session] Candidate: from=${sessionId}, to=${session.peer}, index=${idx}`
+    );
+  });
+
+  /// Answer listener
+  socket.on('answer', (idx: number, answer: RTCSessionDescription): void => {
+    // If no peer
+    if (session.peer === undefined) {
+      return;
+    }
+
+    // Get peer session
+    const peerSession: Session = sessions.get(session.peer)!;
+
+    // Relay answer
+    peerSession.socket.emit('answer', idx, answer);
+
+    Logger.info(
+      `[Session] Answer: from=${sessionId}, to=${session.peer}, index=${idx}`
+    );
+  });
+
+  /// Request listener
+  socket.on('request', (code: string, callback: Function): void => {
     // If peer ID not found
     if (!codes.has(code)) {
       callback(false);
@@ -115,6 +153,28 @@ export const handleSession = (socket: Socket): void => {
 
     // Return registered data
     callback(true, peerSession.fileName, peerSession.fileSize, peerSession.key);
+
+    Logger.info(
+      `[Session] Requested: id=${sessionId}, code=${code}, name=${peerSession.fileName}, size=${peerSession.fileSize}, key=${peerSession.key}`
+    );
+  });
+
+  /// Offer listener
+  socket.on('offer', (idx: number, offer: RTCSessionDescription): void => {
+    // If no peer
+    if (session.peer === undefined) {
+      return;
+    }
+
+    // Get peer session
+    const peerSession: Session = sessions.get(session.peer)!;
+
+    // Relay offer
+    peerSession.socket.emit('offer', idx, offer);
+
+    Logger.info(
+      `[Session] Offer: from=${sessionId}, to=${session.peer}, index=${idx}`
+    );
   });
 };
 

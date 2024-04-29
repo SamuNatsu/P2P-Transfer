@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 // Stores
+import { useStore } from '@/stores';
 import { useSendFileStore } from '@/stores/send-file';
 
 // Icons
@@ -7,6 +8,7 @@ import MdiCloudDownloadOutline from '~icons/mdi/cloud-download-outline';
 import MdiCloudUploadOutline from '~icons/mdi/cloud-upload-outline';
 
 // Inject
+const { status } = useStore();
 const { selectFile } = useSendFileStore();
 </script>
 
@@ -20,6 +22,7 @@ const { selectFile } = useSendFileStore();
         <span class="font-bold">{{ $t('btn.send_file') }}</span>
       </button>
       <button
+        @click="status = 'receive'"
         class="bg-orange-500 flex gap-2 items-center px-4 py-2 rounded hover:bg-orange-400">
         <MdiCloudDownloadOutline class="text-4xl" />
         <span class="font-bold">{{ $t('btn.receive_file') }}</span>

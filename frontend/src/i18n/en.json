@@ -1,21 +1,27 @@
 {
   "title": "P2P Transfer",
   "footer": {
-    "home": "Home",
-    "about": "About"
+    "about": "About",
+    "home": "Home"
   },
   "btn": {
-    "send_file": "Send File",
-    "receive_file": "Receive File",
     "back": "Back",
-    "start_sending": "Start Sending",
-    "interrupt": "Interrupt"
+    "confirm": "Confirm",
+    "interrupt": "Interrupt",
+    "receive_file": "Receive File",
+    "send_file": "Send File",
+    "start_sending": "Start Sending"
   },
   "index": {
+    "fail_reason": "Fail Reason",
     "file_name": "File Name",
     "file_size": "File Size",
+    "input_code": "Input receive code",
+    "progress": "Progress",
+    "receive_code": "Receive Code",
+    "speed": "Speed",
     "status": "Status",
-    "receive_code": "Receive Code"
+    "time_left": "Time Left"
   },
   "about": [
     "Transfer files through browser <a href=\"https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API\" rel=\"noopener noreferer\" target=\"_blank\">WebRTC</a>",
@@ -27,16 +33,16 @@
   ],
   "fail": {
     "unsupport": "Browser unsupport WebRTC",
-    "connect_to_server": "Fail to connect to signal server"
+    "server": "Fail to connect to signal server"
   },
   "status": {
-    "idle": "Idle",
     "connecting": "Connecting",
-    "waiting": "Waiting",
+    "failed": "Failed",
+    "finished": "Finished",
+    "idle": "Idle",
+    "interrupted": "Interrupted",
     "negotiating": "Negotiating",
     "transfering": "Transfering",
-    "finished": "Finished",
-    "failed": "Failed",
-    "interrupted": "Interrupted"
+    "waiting": "Waiting"
   }
 }

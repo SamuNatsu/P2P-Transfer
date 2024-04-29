@@ -1,21 +1,27 @@
 {
   "title": "P2P 传输助手",
   "footer": {
-    "home": "首页",
-    "about": "关于"
+    "about": "关于",
+    "home": "首页"
   },
   "btn": {
-    "send_file": "发送文件",
-    "receive_file": "接收文件",
     "back": "返回",
-    "start_sending": "开始发送",
-    "interrupt": "中断"
+    "confirm": "确认",
+    "interrupt": "中断",
+    "receive_file": "接收文件",
+    "send_file": "发送文件",
+    "start_sending": "开始发送"
   },
   "index": {
+    "fail_reason": "错误原因",
     "file_name": "文件名",
     "file_size": "文件大小",
+    "input_code": "输入取件码",
+    "progress": "进度",
+    "receive_code": "取件码",
+    "speed": "速率",
     "status": "状态",
-    "receive_code": "取件码"
+    "time_left": "剩余时间"
   },
   "about": [
     "通过浏览器 <a href=\"https://developer.mozilla.org/zh-CN/docs/Web/API/WebRTC_API\" rel=\"noopener noreferer\" target=\"_blank\">WebRTC</a> 来分享文件",
@@ -27,16 +33,16 @@
   ],
   "fail": {
     "unsupport": "浏览器不支持 WebRTC",
-    "connect_to_server": "无法连接信令服务器"
+    "server": "无法连接信令服务器"
   },
   "status": {
-    "idle": "空闲",
     "connecting": "连接中",
-    "waiting": "等待中",
+    "failed": "失败",
+    "finished": "完成",
+    "idle": "空闲",
+    "interrupted": "已中断",
     "negotiating": "协商中",
     "transfering": "传输中",
-    "finished": "完成",
-    "failed": "失败",
-    "interrupted": "已中断"
+    "waiting": "等待中"
   }
 }

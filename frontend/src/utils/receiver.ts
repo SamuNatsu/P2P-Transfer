@@ -1,15 +1,14 @@
-/// Sender
+/// Receiver
 import EventEmitter from 'eventemitter3';
 
 import { Socket, io } from 'socket.io-client';
-import { P2PSender } from '@/utils/p2p/p2p-sender';
+import { P2PReceiver } from '@/utils/p2p/p2p-receiver';
+import { cache } from '@/utils/p2p/p2p-cache';
 
 /**
  * Events:
  *
  * failed: (reason)
- * registered: (code)
- * negotiate: ()
  * start: ()
  * progress: (recvBytes)
  * statistic: (speed, time)
@@ -19,9 +18,9 @@ import { P2PSender } from '@/utils/p2p/p2p-sender';
 /**
  * Socket emit events:
  *
- * register: (name, size, callback(code, key))
+ * request: (code, callback(name, size, key))
  * candidate: (index, candidate)
- * answer: (index, answer)
+ * offer: (index, offer)
  */
 
 /**
@@ -29,21 +28,22 @@ import { P2PSender } from '@/utils/p2p/p2p-sender';
  *
  * session: (id)
  * candidate: (index, candidate)
- * offer: (index, offer)
+ * answer: (index, answer)
  */
 
 // Export class
-export class Sender extends EventEmitter {
+export class Receiver extends EventEmitter {
+  private socket: Socket;
   private id: string | null = null;
   private key: CryptoKey | null = null;
-  private lstRecvBytes: number = 0;
+  private receiver: P2PReceiver | null = null;
+  private fileSize: number = 0;
   private recvBytes: number = 0;
-  private sender: P2PSender | null = null;
-  private socket: Socket;
   private staticTimer?: number;
+  private lstRecvBytes: number = 0;
 
   /// Constructor
-  public constructor(private file: File) {
+  public constructor(private code: string) {
     super();
 
     // Connect to signal
@@ -67,56 +67,69 @@ export class Sender extends EventEmitter {
     this.socket.on(
       'candidate',
       (idx: number, candidate: RTCIceCandidate): void => {
-        this.sender!.emit('candidate', idx, candidate);
+        this.receiver!.emit('candidate', idx, candidate);
       }
     );
 
-    // Offer listener
+    // Answer listener
     this.socket.on(
-      'offer',
-      (idx: number, offer: RTCSessionDescription): void => {
-        this.sender!.emit('offer', idx, offer);
-        this.emit('negotiate');
+      'answer',
+      (idx: number, answer: RTCSessionDescription): void => {
+        this.receiver!.emit('answer', idx, answer);
       }
     );
 
-    // Register sender
+    // Request sender
     this.socket.emit(
-      'register',
-      this.file.name,
-      this.file.size,
-      async (code: string, key: string): Promise<void> => {
+      'request',
+      this.code,
+      async (
+        success: boolean,
+        name: string,
+        size: number,
+        key: string
+      ): Promise<void> => {
+        // If not succecss
+        if (!success) {
+          this.emit('failed', 'code_not_found');
+          return;
+        }
+
+        // Store size
+        this.fileSize = size;
+
         // Import encrypt key
         this.key = await crypto.subtle.importKey(
           'raw',
           Uint8Array.from(atob(key), (x: string): number => x.charCodeAt(0)),
           'AES-GCM',
           false,
-          ['encrypt']
+          ['decrypt']
         );
 
-        // Create P2P sender
-        this.sender = new P2PSender(this.file, this.key);
-        this.sender.on('error', (reason: string): void => {
+        // Create P2P receiver
+        this.receiver = new P2PReceiver(this.key);
+        this.receiver.on('error', (reason: string): void => {
           this.emit('failed', reason);
+          this.cleanup();
         });
-        this.sender.on(
+        this.receiver.on(
           'candidate',
           (idx: number, candidate: RTCIceCandidate): void => {
             this.socket.emit('candidate', idx, candidate);
           }
         );
-        this.sender.on(
-          'answer',
-          (idx: number, answer: RTCSessionDescription): void => {
-            this.socket.emit('answer', idx, answer);
+        this.receiver.on(
+          'offer',
+          (idx: number, offer: RTCSessionDescription): void => {
+            this.socket.emit('offer', idx, offer);
           }
         );
-        this.sender.on('start', (): void => {
+        this.receiver.on('start', (): void => {
           this.staticTimer = window.setInterval((): void => {
             const delta: number = this.recvBytes - this.lstRecvBytes;
             const speed: number = delta / 0.5;
-            const time: number = (this.file.size - this.recvBytes) / speed;
+            const time: number = (this.fileSize - this.recvBytes) / speed;
             this.lstRecvBytes = this.recvBytes;
 
             this.emit('statistic', speed, time);
@@ -124,11 +137,12 @@ export class Sender extends EventEmitter {
 
           this.emit('start');
         });
-        this.sender.on('progress', (recvBytes: number): void => {
-          this.recvBytes = recvBytes;
+        this.receiver.on('progress', (recvBytes: number): void => {
           this.emit('progress', recvBytes);
 
-          if (recvBytes >= this.file.size) {
+          this.recvBytes = recvBytes;
+          if (this.recvBytes >= this.fileSize) {
+            cache.statistic();
             this.emit('finished');
 
             setTimeout((): void => this.cleanup(), 5000);
@@ -136,7 +150,7 @@ export class Sender extends EventEmitter {
         });
 
         // Emit event
-        this.emit('registered', code);
+        this.emit('requested', name, size);
       }
     );
   }
@@ -144,7 +158,7 @@ export class Sender extends EventEmitter {
   /// Clean up
   public cleanup(): void {
     this.socket.disconnect();
-    this.sender?.cleanup();
+    this.receiver?.cleanup();
     window.clearInterval(this.staticTimer);
   }
 }

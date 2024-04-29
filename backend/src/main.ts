@@ -6,6 +6,14 @@ import { app, httpServer, wsServer } from '@/server';
 import { handleSession } from '@/session';
 import { Logger } from '@/logger';
 
+// Exception handler
+process.addListener('uncaughtException', (err: Error): void => {
+  Logger.error(`[Main] Uncaught exception:\n${err}`);
+});
+process.addListener('unhandledRejection', (reason: unknown): void => {
+  Logger.error(`[Main] Unhandled rejection:\n${reason}`);
+});
+
 // Add routes
 wsServer.on('connect', (socket: Socket): void => {
   Logger.info(`[WebSocket] Connected: ip=${socket.handshake.address}`);
