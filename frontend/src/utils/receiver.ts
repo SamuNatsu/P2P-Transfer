@@ -55,7 +55,7 @@ export class Receiver extends EventEmitter {
 
     // Reconnect failed listener
     this.socket.io.on('reconnect_failed', (): void => {
-      this.emit('failed', 'connect_to_server');
+      this.emit('failed', 'signal_server');
     });
 
     // Invalid listener
@@ -96,7 +96,7 @@ export class Receiver extends EventEmitter {
       ): Promise<void> => {
         // If not succecss
         if (!success) {
-          this.emit('failed', 'code_not_found');
+          this.emit('failed', 'not_found');
           return;
         }
 

@@ -7,7 +7,7 @@ import { setupI18n } from '@/i18n';
 
 // Components
 import AppHeader from '@/components/app/AppHeader.vue';
-import AppFooter from '@/components/app/AppFooter.vue';
+import AppNav from '@/components/app/AppNav.vue';
 import LanguageSelector from '@/components/LanguageSelector.vue';
 
 import { RouterView } from 'vue-router';
@@ -29,6 +29,7 @@ onBeforeMount((): void => {
 
 <template>
   <AppHeader />
+  <AppNav />
   <LanguageSelector />
   <div class="flex flex-col items-center relative w-full">
     <RouterView v-slot="{ Component }">
@@ -39,7 +40,6 @@ onBeforeMount((): void => {
       </Transition>
     </RouterView>
   </div>
-  <AppFooter />
 </template>
 
 <style scoped>

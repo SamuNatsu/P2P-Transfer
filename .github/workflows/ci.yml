@@ -37,11 +37,11 @@ jobs:
           cd ..
       - name: Assemble server
         run: |
-          rm -rf dist
-          mkdir dist
-          cp backend/dist/server.esm.min.js dist/server.esm.min.js
-          cp backend/package.json dist/package.json
-          cp -r frontend/dist/ dist/www/
+          rm -rf server
+          mkdir server
+          cp backend/dist/server.esm.min.js server/server.esm.min.js
+          cp backend/package.json server/package.json
+          cp -r frontend/dist/ server/public/
       - name: Build docker image
         run: docker build -t snrainiar/p2p-transfer .
       - name: Upload artifact

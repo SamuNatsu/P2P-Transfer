@@ -57,7 +57,7 @@ onBeforeUnmount((): void => {
 
 <template>
   <div>
-    <div class="flex flex-wrap gap-4 items-center justify-center mt-12 mx-4">
+    <div class="flex flex-wrap gap-4 items-center justify-center mx-4">
       <button
         v-if="['idle', 'finished', 'failed', 'interrupted'].includes(status)"
         @click="mainStatus = 'home'"

@@ -13,7 +13,7 @@ const { status } = useStore();
 </script>
 
 <template>
-  <div>
+  <div class="flex flex-col items-center mt-20">
     <Transition>
       <Home v-if="status === 'home'" />
       <Unsupport v-else-if="status === 'unsupport'" />
@@ -32,5 +32,9 @@ const { status } = useStore();
 .v-enter-from,
 .v-leave-to {
   @apply opacity-0;
+}
+
+.v-leave-active {
+  @apply absolute;
 }
 </style>

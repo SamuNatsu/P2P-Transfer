@@ -17,7 +17,7 @@ watch(locale, (): void => {
 
 <template>
   <div
-    class="bg-neutral-700 flex gap-2 items-center mt-4 px-2 py-1 rounded hover:bg-neutral-600">
+    class="bg-neutral-700 flex gap-2 items-center mt-2 px-2 py-1 rounded hover:bg-neutral-600">
     <MdiLanguage class="text-2xl" />
     <select v-model="locale" class="bg-transparent cursor-pointer outline-none">
       <option

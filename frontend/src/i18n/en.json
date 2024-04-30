@@ -47,8 +47,16 @@
     "Built with <a href=\"https://cn.vuejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Vue3</a> & <a href=\"https://nodejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Node.js</a> for modern Web tech"
   ],
   "fail": {
+    "invalid": "Session invalid",
+    "not_found": "Receive code not found or has been used",
+    "signal_server": "Fail to connect to signal server",
     "unsupport": "Browser unsupport WebRTC",
-    "server": "Fail to connect to signal server"
+    "webrtc_answer": "Fail to handle answer",
+    "webrtc_candidate": "Fail to add candidate",
+    "webrtc_channel": "P2P channel error",
+    "webrtc_connection": "Fail to create P2P connection",
+    "webrtc_message": "Fail to handle message",
+    "webrtc_offer": "Fail to handle offer"
   },
   "status": {
     "connecting": "Connecting",

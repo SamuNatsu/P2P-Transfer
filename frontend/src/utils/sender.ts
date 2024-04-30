@@ -55,7 +55,7 @@ export class Sender extends EventEmitter {
 
     // Reconnect failed listener
     this.socket.io.on('reconnect_failed', (): void => {
-      this.emit('failed', 'connect_to_server');
+      this.emit('failed', 'signal_server');
     });
 
     // Assign session ID listener

@@ -18,6 +18,7 @@ export const useRecvFileStore = createGlobalState(() => {
   const failReason: Ref<string> = ref('');
   const fileName: Ref<string> = ref('');
   const fileSize: Ref<number> = ref(0);
+  const metaGot: Ref<boolean> = ref(false);
   const recvBytes: Ref<number> = ref(0);
   const speed: Ref<number> = ref(0);
   const status: Ref<
@@ -63,11 +64,14 @@ export const useRecvFileStore = createGlobalState(() => {
     cleanup();
   };
   const resetStore = (): void => {
-    status.value = 'idle';
+    failReason.value = '';
     fileName.value = '';
     fileSize.value = 0;
+    metaGot.value = false;
     recvBytes.value = 0;
-    failReason.value = '';
+    speed.value = 0;
+    status.value = 'idle';
+    time.value = 0;
 
     cleanup();
   };
@@ -94,6 +98,7 @@ export const useRecvFileStore = createGlobalState(() => {
     _receiver.on('requested', (name: string, size: number): void => {
       fileName.value = name;
       fileSize.value = size;
+      metaGot.value = true;
       status.value = 'negotiating';
     });
     _receiver.on('start', (): void => {
@@ -115,6 +120,7 @@ export const useRecvFileStore = createGlobalState(() => {
   return {
     fileName,
     fileSize,
+    metaGot,
     status,
 
     failReasonStr,

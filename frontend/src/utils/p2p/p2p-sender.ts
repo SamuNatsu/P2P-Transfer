@@ -132,8 +132,6 @@ export class P2PSender extends EventEmitter {
             this.emit('start');
           }
           this.openedChanelNum++;
-
-          console.debug(`[p2p-sender] Channel opened: ${i}`);
         });
 
         // Message listener

@@ -5,7 +5,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy distribution to work directory
-COPY ./dist /app
+COPY ./server /app
 
 # Install dependences
 RUN npm install --omit=dev
@@ -14,4 +14,4 @@ RUN npm install --omit=dev
 EXPOSE 3000
 
 # Start command
-CMD ["npm", "start"]
+CMD ["npm", "start:docker"]
