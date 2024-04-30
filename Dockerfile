@@ -17,4 +17,4 @@ RUN npm install
 EXPOSE 3000
 
 # Start command
-CMD ["npm", "start:docker"]
+CMD ["npm", "run", "start:docker"]
