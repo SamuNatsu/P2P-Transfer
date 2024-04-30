@@ -58,6 +58,11 @@ export class Receiver extends EventEmitter {
       this.emit('failed', 'connect_to_server');
     });
 
+    // Invalid listener
+    this.socket.on('invalid', (): void => {
+      this.emit('failed', 'invalid');
+    });
+
     // Assign session ID listener
     this.socket.on('session', (id: string): void => {
       this.id = id;
