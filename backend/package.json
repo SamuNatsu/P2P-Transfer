@@ -4,16 +4,17 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "dev": "scripts/dev.sh",
     "build": "rollup -c rollup.config.ts --configPlugin @rollup/plugin-typescript",
-    "start": "node server.esm.min.js",
-    "test": "LOG_LV=10 node dist/server.esm.js"
+    "start:local": "node dist/server.esm.min.js",
+    "start:docker": "node server.esm.min.js"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/compression": "^1.7.5",
     "@types/express": "^4.17.21",
-    "rollup": "^4.17.1",
+    "rollup": "^4.17.2",
     "tslib": "^2.6.2",
     "typescript": "^5.4.5"
   },

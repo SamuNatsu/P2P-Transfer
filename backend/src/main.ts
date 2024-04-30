@@ -2,9 +2,9 @@
 import express from 'express';
 
 import { Socket } from 'socket.io';
+import { Logger } from '@/logger';
 import { app, httpServer, wsServer } from '@/server';
 import { handleSession } from '@/session';
-import { Logger } from '@/logger';
 
 // Exception handler
 process.addListener('uncaughtException', (err: Error): void => {
@@ -25,7 +25,10 @@ wsServer.on('connect', (socket: Socket): void => {
 app.use(express.static('public'));
 
 // Start server
-const port: number = parseInt(process.env.PORT ?? '3000');
+const port: number = Math.max(
+  1,
+  Math.min(parseInt(process.env.PORT ?? '3000'), 65535)
+);
 httpServer.listen(port, (): void => {
   Logger.info(`[Server] Start listening on port ${port}`);
 });

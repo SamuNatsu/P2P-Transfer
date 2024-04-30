@@ -44,7 +44,7 @@ export const handleSession = (socket: Socket): void => {
     // Resume session
     sessionId = socket.handshake.auth.sessionId;
     if (!sessions.has(sessionId)) {
-      socket.disconnect();
+      socket.emit('invalid');
       return;
     }
     session = sessions.get(sessionId)!;
@@ -58,13 +58,16 @@ export const handleSession = (socket: Socket): void => {
   /// Disconnect listener
   socket.on('disconnect', (reason: DisconnectReason): void => {
     // If not disconnected by server
-    if (reason !== 'server namespace disconnect') {
+    if (
+      reason !== 'server namespace disconnect' &&
+      session.timeout === undefined
+    ) {
       // Set destroy timeout for 10s
       session.timeout = setTimeout((): void => {
         Logger.warn(`[Session] Timeout: id=${sessionId}`);
 
         destroySession(sessionId);
-      }, 10000);
+      }, 30000);
     }
 
     Logger.info(
@@ -199,7 +202,7 @@ const destroySession = (sessionId: string): void => {
   if (session.peer !== undefined) {
     Logger.warn(`[Session] Peer destroy: id=${session.peer}`);
 
-    sessions.get(session.peer)?.socket.disconnect();
+    sessions.get(session.peer)?.socket.disconnect(true);
     destroySession(session.peer);
   }
 
