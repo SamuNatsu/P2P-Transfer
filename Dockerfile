@@ -1,6 +1,9 @@
 # Base image
 FROM node:20-alpine
 
+# Environment variables
+ENV NODE_ENV=production
+
 # Work directory
 WORKDIR /app
 
@@ -8,7 +11,7 @@ WORKDIR /app
 COPY ./server /app
 
 # Install dependences
-RUN npm install --omit=dev
+RUN npm install
 
 # Expose port
 EXPOSE 3000
