@@ -13,6 +13,7 @@
     "start_sending": "送信開始"
   },
   "index": {
+    "avg_speed": "平均スピード",
     "fail_reason": "失敗理由",
     "file_name": "ファイルネーム",
     "file_size": "ファイルサイズ",
@@ -24,9 +25,5 @@
     "time_left": "残り時間",
     "use_memory": "Memory Saving を使用する",
     "use_stream": "Stream Saving を使用する"
-  },
-  "fail": {
-    "unsupport": "ブラウザが WebRTC をサポートしていない",
-    "server": "シグナルサーバーへの接続に失敗"
   }
 }

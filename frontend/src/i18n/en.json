@@ -14,6 +14,7 @@
     "start_sending": "Start Sending"
   },
   "index": {
+    "avg_speed": "Avg Speed",
     "fail_reason": "Fail Reason",
     "file_name": "File Name",
     "file_size": "File Size",
@@ -47,9 +48,10 @@
     "Built with <a href=\"https://cn.vuejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Vue3</a> & <a href=\"https://nodejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Node.js</a> for modern Web tech"
   ],
   "fail": {
-    "invalid": "Session invalid",
+    "invalid_code": "Invalid receive code",
     "not_found": "Receive code not found or has been used",
-    "signal_server": "Fail to connect to signal server",
+    "server": "Fail to connect to signal server",
+    "timeout": "Session timeout",
     "unsupport": "Browser unsupport WebRTC",
     "webrtc_answer": "Fail to handle answer",
     "webrtc_candidate": "Fail to add candidate",

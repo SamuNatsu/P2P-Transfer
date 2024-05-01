@@ -23,10 +23,10 @@ import { cache } from '@/utils/p2p/p2p-cache';
 
 // Export class
 export class P2PReceiver extends EventEmitter {
-  private peers: RTCPeerConnection[] = [];
-  private failedPeerNum: number = 0;
   private channels: RTCDataChannel[] = [];
+  private failedPeerNum: number = 0;
   private openedChanelNum: number = 0;
+  private peers: RTCPeerConnection[] = [];
   private recvBytes: number = 0;
 
   /// Constructor
@@ -60,7 +60,8 @@ export class P2PReceiver extends EventEmitter {
 
             // Set remote description
             await peer.setRemoteDescription(answer);
-          } catch {
+          } catch (err: unknown) {
+            console.error(err);
             this.emit('error', 'webrtc_answer');
           }
         }
@@ -146,17 +147,14 @@ export class P2PReceiver extends EventEmitter {
         peer
           .createOffer()
           .then(async (offer: RTCSessionDescriptionInit): Promise<void> => {
-            try {
-              // Set local description
-              await peer.setLocalDescription(offer);
+            // Set local description
+            await peer.setLocalDescription(offer);
 
-              // Emit event
-              this.emit('offer', i, offer);
-            } catch {
-              this.emit('error', 'webrtc_offer');
-            }
+            // Emit event
+            this.emit('offer', i, offer);
           })
-          .catch((): void => {
+          .catch((err: unknown): void => {
+            console.error(err);
             this.emit('error', 'webrtc_offer');
           });
       }

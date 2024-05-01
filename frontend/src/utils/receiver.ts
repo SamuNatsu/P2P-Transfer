@@ -1,9 +1,8 @@
 /// Receiver
 import EventEmitter from 'eventemitter3';
-
 import { Socket, io } from 'socket.io-client';
+
 import { P2PReceiver } from '@/utils/p2p/p2p-receiver';
-import { cache } from '@/utils/p2p/p2p-cache';
 
 /**
  * Emit events:
@@ -33,21 +32,22 @@ import { cache } from '@/utils/p2p/p2p-cache';
 
 // Export class
 export class Receiver extends EventEmitter {
-  private socket: Socket;
+  private fileSize: number = 0;
   private id: string | null = null;
   private key: CryptoKey | null = null;
-  private receiver: P2PReceiver | null = null;
-  private fileSize: number = 0;
-  private recvBytes: number = 0;
-  private staticTimer?: number;
   private lstRecvBytes: number = 0;
+  private receiver: P2PReceiver | null = null;
+  private recvBytes: number = 0;
+  private socket: Socket;
+  private startAt: number = 0;
+  private staticTimer?: number;
 
   /// Constructor
   public constructor(private code: string) {
     super();
 
     // Connect to signal
-    this.socket = io({
+    this.socket = io('/receiver', {
       auth: { sessionId: this.id },
       path: '/ws',
       reconnectionAttempts: 5
@@ -58,9 +58,9 @@ export class Receiver extends EventEmitter {
       this.emit('failed', 'signal_server');
     });
 
-    // Invalid listener
-    this.socket.on('invalid', (): void => {
-      this.emit('failed', 'invalid');
+    // Session timeout listener
+    this.socket.on('timeout', (): void => {
+      this.emit('failed', 'timeout');
     });
 
     // Assign session ID listener
@@ -92,6 +92,7 @@ export class Receiver extends EventEmitter {
         success: boolean,
         name: string,
         size: number,
+        type: string,
         key: string
       ): Promise<void> => {
         // If not succecss
@@ -100,7 +101,7 @@ export class Receiver extends EventEmitter {
           return;
         }
 
-        // Store size
+        // Store data
         this.fileSize = size;
 
         // Import encrypt key
@@ -131,6 +132,7 @@ export class Receiver extends EventEmitter {
           }
         );
         this.receiver.on('start', (): void => {
+          this.startAt = Date.now();
           this.staticTimer = window.setInterval((): void => {
             const delta: number = this.recvBytes - this.lstRecvBytes;
             const speed: number = delta / 0.5;
@@ -147,15 +149,16 @@ export class Receiver extends EventEmitter {
 
           this.recvBytes = recvBytes;
           if (this.recvBytes >= this.fileSize) {
-            cache.statistic();
-            this.emit('finished');
+            const totalTime: number = (Date.now() - this.startAt) / 1000;
+            this.emit('finished', this.fileSize / totalTime);
 
+            clearInterval(this.staticTimer);
             setTimeout((): void => this.cleanup(), 5000);
           }
         });
 
         // Emit event
-        this.emit('requested', name, size);
+        this.emit('requested', name, size, type);
       }
     );
   }
@@ -164,6 +167,6 @@ export class Receiver extends EventEmitter {
   public cleanup(): void {
     this.socket.disconnect();
     this.receiver?.cleanup();
-    window.clearInterval(this.staticTimer);
+    clearInterval(this.staticTimer);
   }
 }

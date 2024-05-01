@@ -11,9 +11,10 @@ const {
   metaGot,
   status,
 
+  avgSpeedStr,
   failReasonStr,
   fileSizeStr,
-  percent,
+  percentStr,
   speedStr,
   statusStr,
   timeStr
@@ -83,7 +84,13 @@ const statusCls: ComputedRef<string> = computed((): string => {
           <th class="text-left pr-4 whitespace-nowrap">
             {{ $t('index.progress') }}
           </th>
-          <td>{{ (percent * 100).toFixed(1) }}%</td>
+          <td>{{ percentStr }}</td>
+        </tr>
+        <tr v-if="status === 'finished'">
+          <th class="text-left pr-4 whitespace-nowrap">
+            {{ $t('index.avg_speed') }}
+          </th>
+          <td>{{ avgSpeedStr }}</td>
         </tr>
         <tr v-if="status === 'failed'">
           <th class="text-left pr-4 whitespace-nowrap">

@@ -2,10 +2,8 @@
 import Dexie, { Table } from 'dexie';
 import streamSaver from 'streamsaver';
 
-import { P2P_CONNECTION_COUNT } from '@/utils/p2p';
-
 // Types
-export interface DataBlock {
+interface DataBlock {
   id?: number;
   ch: number;
   data: ArrayBuffer;
@@ -15,7 +13,7 @@ export interface DataBlock {
 streamSaver.mitm = import.meta.env.BASE_URL + 'mitm.html?version=2.0.0';
 
 // Export class
-export class P2PCache extends Dexie {
+class P2PCache extends Dexie {
   private dataBlocks!: Table<DataBlock>;
 
   /// Constructor
@@ -40,30 +38,21 @@ export class P2PCache extends Dexie {
     return (await this.dataBlocks.get(id))?.data ?? null;
   }
 
-  /// Get cache statistic
-  public async statistic(): Promise<void> {
-    for (let i = 0; i < P2P_CONNECTION_COUNT; i++) {
-      const count: number = await this.dataBlocks.where({ ch: i }).count();
-
-      console.debug(`[cache] Packets from channel #${i}: ${count}`);
-    }
-  }
-
   /// Memory download
-  public async memoryDownload(name: string): Promise<void> {
+  public async memoryDownload(name: string, type: string): Promise<void> {
     const blocks: ArrayBuffer[] = [];
 
     for (let i = 0; true; i++) {
-      const block: DataBlock | undefined = await this.dataBlocks.get({ id: i });
-      if (block === undefined) {
+      const block: ArrayBuffer | null = await this.get(i);
+      if (block === null) {
         break;
       }
 
-      blocks.push(block.data);
+      blocks.push(block);
     }
     this.clear();
 
-    const blob: Blob = new Blob(blocks);
+    const blob: Blob = new Blob(blocks, { type });
     const url: string = URL.createObjectURL(blob);
 
     const el: HTMLAnchorElement = document.createElement('a');
@@ -80,12 +69,12 @@ export class P2PCache extends Dexie {
     const writer: WritableStreamDefaultWriter = stream.getWriter();
 
     for (let i = 0; true; i++) {
-      const block: DataBlock | undefined = await this.dataBlocks.get({ id: i });
-      if (block === undefined) {
+      const block: ArrayBuffer | null = await this.get(i);
+      if (block === null) {
         break;
       }
 
-      await writer.write(new Uint8Array(block.data));
+      await writer.write(new Uint8Array(block));
     }
     this.clear();
     await writer.close();

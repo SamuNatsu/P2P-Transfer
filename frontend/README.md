@@ -1,9 +1,33 @@
-# Vue 3 + TypeScript + Vite
+# Frontend
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Build
 
-## Recommended Setup
+1. Install dependencies
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (previously Volar) and disable Vetur
+```bash
+# You can use other package managers
+pnpm install
+```
 
-- Use [vue-tsc](https://github.com/vuejs/language-tools/tree/master/packages/tsc) for performing the same type checking from the command line, or for generating d.ts files for SFCs.
+2. Execute build script
+
+```bash
+pnpm run build
+```
+
+3. Distributions are in `dist` directory
+
+## Development
+
+1. Install dependencies
+
+```bash
+# You can use other package managers
+pnpm install
+```
+
+2. Start dev server
+
+```bash
+pnpm run dev
+```

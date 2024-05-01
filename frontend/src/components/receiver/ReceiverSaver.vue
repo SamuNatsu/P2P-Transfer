@@ -10,7 +10,7 @@ import MdiCheckBold from '~icons/mdi/check-bold';
 
 // Injects
 const { status } = useStore();
-const { saveMem, saveStream } = useRecvFileStore();
+const { saveMemory, saveStream } = useRecvFileStore();
 
 // Reactive
 const busy: Ref<boolean> = ref(false);
@@ -18,7 +18,7 @@ const busy: Ref<boolean> = ref(false);
 // Actions
 const memorySave = (): void => {
   busy.value = true;
-  saveMem().then((): void => {
+  saveMemory().then((): void => {
     status.value = 'home';
   });
 };

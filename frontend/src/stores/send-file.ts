@@ -15,6 +15,7 @@ export const useSendFileStore = createGlobalState(() => {
   const { status: mainStatus } = useStore();
 
   /// States
+  const avgSpeed: Ref<number> = ref(0);
   const code: Ref<string | null> = ref(null);
   const failReason: Ref<string> = ref('');
   const file: Ref<File | null> = ref(null);
@@ -35,14 +36,21 @@ export const useSendFileStore = createGlobalState(() => {
   let _sender: Sender | null = null;
 
   /// Getters
+  const avgSpeedStr: ComputedRef<string> = computed((): string =>
+    formatNumber(avgSpeed.value, 'B/s')
+  );
   const failReasonStr: ComputedRef<string> = computed((): string =>
     t('fail.' + failReason.value)
   );
-  const fileSize: ComputedRef<string> = computed((): string =>
+  const fileSizeStr: ComputedRef<string> = computed((): string =>
     file.value === null ? '' : formatNumber(file.value.size, 'B')
   );
-  const percent: ComputedRef<number> = computed((): number =>
-    file.value === null ? 0 : recvBytes.value / file.value.size
+  const percentStr: ComputedRef<string> = computed(
+    (): string =>
+      (file.value === null
+        ? 0
+        : (recvBytes.value / file.value.size) * 100
+      ).toFixed(1) + '%'
   );
   const speedStr: ComputedRef<string> = computed((): string =>
     formatNumber(speed.value, 'B/s')
@@ -64,11 +72,14 @@ export const useSendFileStore = createGlobalState(() => {
     cleanup();
   };
   const resetStore = (): void => {
-    file.value = null;
-    status.value = 'idle';
+    avgSpeed.value = 0;
     code.value = null;
-    recvBytes.value = 0;
     failReason.value = '';
+    file.value = null;
+    recvBytes.value = 0;
+    speed.value = 0;
+    status.value = 'idle';
+    time.value = 0;
 
     cleanup();
   };
@@ -95,6 +106,7 @@ export const useSendFileStore = createGlobalState(() => {
       ) {
         return;
       }
+
       status.value = 'failed';
       failReason.value = reason;
     });
@@ -115,7 +127,8 @@ export const useSendFileStore = createGlobalState(() => {
       speed.value = curSpeed;
       time.value = timeLeft;
     });
-    _sender.on('finished', (): void => {
+    _sender.on('finished', (speed: number): void => {
+      avgSpeed.value = speed;
       status.value = 'finished';
     });
   };
@@ -126,9 +139,10 @@ export const useSendFileStore = createGlobalState(() => {
     file,
     status,
 
+    avgSpeedStr,
     failReasonStr,
-    fileSize,
-    percent,
+    fileSizeStr,
+    percentStr,
     speedStr,
     statusStr,
     timeStr,

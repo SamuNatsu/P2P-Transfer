@@ -20,22 +20,22 @@ import {
 
 /**
  * On events:
- * 
+ *
  * addcandidate: (index, candidate)
  * offer: (index, offer)
  */
 
 // Export class
 export class P2PSender extends EventEmitter {
-  private peers: RTCPeerConnection[] = [];
-  private failedPeerNum: number = 0;
   private channels: RTCDataChannel[] = [];
-  private openedChanelNum: number = 0;
   private currentChannel: number = 0;
-  private packetId: number = 0;
-  private recvBytes: number = 0;
-  private reader: FileReader;
+  private failedPeerNum: number = 0;
   private fileOffset: number = 0;
+  private openedChanelNum: number = 0;
+  private packetId: number = 0;
+  private peers: RTCPeerConnection[] = [];
+  private reader: FileReader;
+  private recvBytes: number = 0;
 
   /// Constructor
   public constructor(private file: File, private key: CryptoKey) {
@@ -49,6 +49,7 @@ export class P2PSender extends EventEmitter {
           // Add ICE candidate
           await this.peers[idx].addIceCandidate(candidate);
         } catch (err: unknown) {
+          console.error(err);
           this.emit('error', 'webrtc_candidate');
         }
       }
@@ -73,7 +74,8 @@ export class P2PSender extends EventEmitter {
 
           // Emit event
           this.emit('answer', idx, answer);
-        } catch {
+        } catch (err: unknown) {
+          console.error(err);
           this.emit('error', 'webrtc_offer');
         }
       }

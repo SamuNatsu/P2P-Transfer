@@ -1,7 +1,7 @@
 /// Sender
 import EventEmitter from 'eventemitter3';
-
 import { Socket, io } from 'socket.io-client';
+
 import { P2PSender } from '@/utils/p2p/p2p-sender';
 
 /**
@@ -13,7 +13,7 @@ import { P2PSender } from '@/utils/p2p/p2p-sender';
  * start: ()
  * progress: (recvBytes)
  * statistic: (speed, time)
- * finished: ()
+ * finished: (speed)
  */
 
 /**
@@ -40,6 +40,7 @@ export class Sender extends EventEmitter {
   private recvBytes: number = 0;
   private sender: P2PSender | null = null;
   private socket: Socket;
+  private startAt: number = 0;
   private staticTimer?: number;
 
   /// Constructor
@@ -47,7 +48,7 @@ export class Sender extends EventEmitter {
     super();
 
     // Connect to signal
-    this.socket = io({
+    this.socket = io('/sender', {
       auth: { sessionId: this.id },
       path: '/ws',
       reconnectionAttempts: 5
@@ -55,7 +56,12 @@ export class Sender extends EventEmitter {
 
     // Reconnect failed listener
     this.socket.io.on('reconnect_failed', (): void => {
-      this.emit('failed', 'signal_server');
+      this.emit('failed', 'server');
+    });
+
+    // Session timeout listener
+    this.socket.on('timeout', (): void => {
+      this.emit('failed', 'timeout');
     });
 
     // Assign session ID listener
@@ -85,6 +91,7 @@ export class Sender extends EventEmitter {
       'register',
       this.file.name,
       this.file.size,
+      this.file.type,
       async (code: string, key: string): Promise<void> => {
         // Import encrypt key
         this.key = await crypto.subtle.importKey(
@@ -113,6 +120,7 @@ export class Sender extends EventEmitter {
           }
         );
         this.sender.on('start', (): void => {
+          this.startAt = Date.now();
           this.staticTimer = window.setInterval((): void => {
             const delta: number = this.recvBytes - this.lstRecvBytes;
             const speed: number = delta / 0.5;
@@ -129,8 +137,11 @@ export class Sender extends EventEmitter {
           this.emit('progress', recvBytes);
 
           if (recvBytes >= this.file.size) {
-            this.emit('finished');
+            const totalTime: number = (Date.now() - this.startAt) / 1000;
 
+            this.emit('finished', this.file.size / totalTime);
+
+            clearInterval(this.staticTimer);
             setTimeout((): void => this.cleanup(), 5000);
           }
         });
@@ -145,6 +156,6 @@ export class Sender extends EventEmitter {
   public cleanup(): void {
     this.socket.disconnect();
     this.sender?.cleanup();
-    window.clearInterval(this.staticTimer);
+    clearInterval(this.staticTimer);
   }
 }
