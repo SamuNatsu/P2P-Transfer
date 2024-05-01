@@ -1,8 +1,6 @@
 #!/bin/bash
 
 if [ -f "pid" ]; then
-  PID=$(cat pid)
+  kill -s SIGINT $(cat pid)
   rm pid
-
-  kill -s SIGINT $PID
 fi

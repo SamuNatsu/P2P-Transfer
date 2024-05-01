@@ -1,10 +1,10 @@
 /// Main entry
 import express from 'express';
-
 import { Socket } from 'socket.io';
+
 import { Logger } from '@/logger';
-import { app, httpServer, wsServer } from '@/server';
-import { handleSession } from '@/session';
+import { app, httpServer, receiverNsp, senderNsp } from '@/server';
+import { handleReceiver, handleSender } from '@/session';
 
 // Exception handler
 process.addListener('uncaughtException', (err: Error): void => {
@@ -14,21 +14,23 @@ process.addListener('unhandledRejection', (reason: unknown): void => {
   Logger.error(`[Main] Unhandled rejection:\n${reason}`);
 });
 
-// Add routes
-wsServer.on('connect', (socket: Socket): void => {
-  Logger.info(`[WebSocket] Connected: ip=${socket.handshake.address}`);
+// WebSocket connection handler
+senderNsp.on('connect', (socket: Socket): void => {
+  Logger.info(`[WS] Sender connected: ip=${socket.handshake.address}`);
 
-  handleSession(socket);
+  handleSender(socket);
+});
+receiverNsp.on('connect', (socket: Socket): void => {
+  Logger.info(`[WS] Receiver connected: ip=${socket.handshake.address}`);
+
+  handleReceiver(socket);
 });
 
-// Server static files
+// Serve static files
 app.use(express.static('public'));
 
 // Start server
-const port: number = Math.max(
-  1,
-  Math.min(parseInt(process.env.PORT ?? '3000'), 65535)
-);
+const port: number = parseInt(process.env.PORT ?? '3000');
 httpServer.listen(port, (): void => {
-  Logger.info(`[Server] Start listening on port ${port}`);
+  Logger.info(`[HTTP] Started: port=${port}`);
 });

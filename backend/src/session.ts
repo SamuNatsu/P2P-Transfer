@@ -1,19 +1,19 @@
 /// Session module
 import crypto from 'crypto';
-
 import { customAlphabet, nanoid } from 'nanoid';
 import { DisconnectReason, Socket } from 'socket.io';
+
 import { Logger } from '@/logger';
 
 // Types
 type Session = {
-  socket: Socket;
-  peer?: string;
-  timeout?: NodeJS.Timeout;
   code?: string;
-  fileName?: string;
-  fileSize?: number;
   key?: string;
+  name?: string;
+  peer?: string;
+  size?: number;
+  socket: Socket;
+  timeout?: NodeJS.Timeout;
 };
 
 // Code generator
@@ -23,36 +23,36 @@ const codeGen = customAlphabet('6789BCDFGHJKLMNPQRTWbcdfghjkmnpqrtwz');
 const sessions: Map<string, Session> = new Map();
 const codes: Map<string, string> = new Map();
 
-// Handle session
-export const handleSession = (socket: Socket): void => {
-  let sessionId: string;
+// Handle sender
+export const handleSender = (socket: Socket): void => {
+  let id: string;
   let session: Session;
 
   /// Get session
   if (typeof socket.handshake.auth.sessionId !== 'string') {
     // New session
-    sessionId = nanoid(32);
+    id = nanoid(32);
     session = { socket };
 
-    sessions.set(sessionId, session);
-    socket.emit('session', sessionId);
+    sessions.set(id, session);
+    socket.emit('session', id);
 
-    Logger.info(
-      `[Session] New: ip=${socket.handshake.address}, id=${sessionId}`
-    );
+    Logger.info(`[Session] New: ip=${socket.handshake.address}, id=${id}`);
+    Logger.debug(`[Session] Monitor: size=${sessions.size}`);
   } else {
     // Resume session
-    sessionId = socket.handshake.auth.sessionId;
-    if (!sessions.has(sessionId)) {
-      socket.emit('invalid');
+    id = socket.handshake.auth.sessionId;
+    if (!sessions.has(id)) {
+      socket.emit('timeout');
       return;
     }
-    session = sessions.get(sessionId)!;
+    session = sessions.get(id)!;
+
+    // Stop destroy timeout
     clearTimeout(session.timeout);
 
-    Logger.info(
-      `[Session] Resume: ip=${socket.handshake.address}, id=${sessionId}`
-    );
+    Logger.info(`[Session] Resume: ip=${socket.handshake.address}, id=${id}`);
+    Logger.debug(`[Session] Monitor: size=${sessions.size}`);
   }
 
   /// Disconnect listener
@@ -62,36 +62,42 @@ export const handleSession = (socket: Socket): void => {
       reason !== 'server namespace disconnect' &&
       session.timeout === undefined
     ) {
-      // Set destroy timeout for 10s
+      // Set destroy timeout for 30s
       session.timeout = setTimeout((): void => {
-        Logger.warn(`[Session] Timeout: id=${sessionId}`);
+        Logger.warn(`[Session] Timeout: id=${id}`);
 
-        destroySession(sessionId);
+        destroySession(id);
       }, 30000);
     }
 
     Logger.info(
-      `[WebSocket] Disconnected: ip=${socket.handshake.address}, reason=${reason}`
+      `[WS] Disconnected: ip=${socket.handshake.address}, reason=${reason}`
     );
   });
 
   /// Register listener
   socket.on(
     'register',
-    (fileName: string, fileSize: number, callback: Function): void => {
+    (name: string, size: number, callback: Function): void => {
+      // If code generated
+      if (session.code !== undefined) {
+        return;
+      }
+
       // Register data
       session.code = codeGen(8);
-      session.fileName = fileName;
-      session.fileSize = fileSize;
       session.key = crypto.randomBytes(32).toString('base64');
-      codes.set(session.code, sessionId);
+      session.name = name;
+      session.size = size;
+      codes.set(session.code, id);
 
       // Return code & key
       callback(session.code, session.key);
 
       Logger.info(
-        `[Session] Registered: id=${sessionId}, name=${fileName}, size=${fileSize}, code=${session.code}, key=${session.key}`
+        `[Session] Registered: id=${id}, name=${name}, size=${size}, code=${session.code}, key=${session.key}`
       );
+      Logger.debug(`[Session] Monitor: code_size=${codes.size}`);
     }
   );
 
@@ -101,15 +107,13 @@ export const handleSession = (socket: Socket): void => {
     if (session.peer === undefined) {
       return;
     }
-
-    // Get peer session
     const peerSession: Session = sessions.get(session.peer)!;
 
     // Relay candidate
     peerSession.socket.emit('candidate', idx, candidate);
 
-    Logger.info(
-      `[Session] Candidate: from=${sessionId}, to=${session.peer}, index=${idx}`
+    Logger.trace(
+      `[Session] Candidate: from=${id}, to=${session.peer}, index=${idx}`
     );
   });
 
@@ -119,15 +123,64 @@ export const handleSession = (socket: Socket): void => {
     if (session.peer === undefined) {
       return;
     }
-
-    // Get peer session
     const peerSession: Session = sessions.get(session.peer)!;
 
     // Relay answer
     peerSession.socket.emit('answer', idx, answer);
 
     Logger.info(
-      `[Session] Answer: from=${sessionId}, to=${session.peer}, index=${idx}`
+      `[Session] Answer: from=${id}, to=${session.peer}, index=${idx}`
+    );
+  });
+};
+
+// Handle receiver
+export const handleReceiver = (socket: Socket): void => {
+  let id: string;
+  let session: Session;
+
+  /// Get session
+  if (typeof socket.handshake.auth.sessionId !== 'string') {
+    // New session
+    id = nanoid(32);
+    session = { socket };
+
+    sessions.set(id, session);
+    socket.emit('session', id);
+
+    Logger.info(`[Session] New: ip=${socket.handshake.address}, id=${id}`);
+  } else {
+    // Resume session
+    id = socket.handshake.auth.sessionId;
+    if (!sessions.has(id)) {
+      socket.emit('timeout');
+      return;
+    }
+    session = sessions.get(id)!;
+
+    // Stop destroy timeout
+    clearTimeout(session.timeout);
+
+    Logger.info(`[Session] Resume: ip=${socket.handshake.address}, id=${id}`);
+  }
+
+  /// Disconnect listener
+  socket.on('disconnect', (reason: DisconnectReason): void => {
+    // If not disconnected by server
+    if (
+      reason !== 'server namespace disconnect' &&
+      session.timeout === undefined
+    ) {
+      // Set destroy timeout for 30s
+      session.timeout = setTimeout((): void => {
+        Logger.warn(`[Session] Timeout: id=${id}`);
+
+        destroySession(id);
+      }, 30000);
+    }
+
+    Logger.info(
+      `[WS] Disconnected: ip=${socket.handshake.address}, reason=${reason}`
     );
   });
 
@@ -139,26 +192,39 @@ export const handleSession = (socket: Socket): void => {
       return;
     }
     const peerId: string = codes.get(code)!;
+    const peerSession: Session = sessions.get(peerId)!;
 
     // If peer locked
-    const peerSession: Session = sessions.get(peerId)!;
     if (peerSession.peer !== undefined) {
       callback(false);
       return;
     }
 
     // Lock peer
-    peerSession.peer = sessionId;
+    peerSession.peer = id;
     session.peer = peerId;
 
-    // Emit peer
-    peerSession.socket.emit('peer', sessionId);
-
     // Return registered data
-    callback(true, peerSession.fileName, peerSession.fileSize, peerSession.key);
+    callback(true, peerSession.name, peerSession.size, peerSession.key);
 
     Logger.info(
-      `[Session] Requested: id=${sessionId}, code=${code}, name=${peerSession.fileName}, size=${peerSession.fileSize}, key=${peerSession.key}`
+      `[Session] Requested: id=${id}, code=${code}, name=${peerSession.name}, size=${peerSession.size}, key=${peerSession.key}`
+    );
+  });
+
+  /// Candidate listener
+  socket.on('candidate', (idx: number, candidate: RTCIceCandidate): void => {
+    // If no peer
+    if (session.peer === undefined) {
+      return;
+    }
+    const peerSession: Session = sessions.get(session.peer)!;
+
+    // Relay candidate
+    peerSession.socket.emit('candidate', idx, candidate);
+
+    Logger.trace(
+      `[Session] Candidate: from=${id}, to=${session.peer}, index=${idx}`
     );
   });
 
@@ -168,43 +234,43 @@ export const handleSession = (socket: Socket): void => {
     if (session.peer === undefined) {
       return;
     }
-
-    // Get peer session
     const peerSession: Session = sessions.get(session.peer)!;
 
     // Relay offer
     peerSession.socket.emit('offer', idx, offer);
 
     Logger.info(
-      `[Session] Offer: from=${sessionId}, to=${session.peer}, index=${idx}`
+      `[Session] Offer: from=${id}, to=${session.peer}, index=${idx}`
     );
   });
 };
 
 // Destroy session
-const destroySession = (sessionId: string): void => {
+const destroySession = (id: string): void => {
   // If session not found
-  if (!sessions.has(sessionId)) {
+  if (!sessions.has(id)) {
     return;
   }
-  const session: Session = sessions.get(sessionId)!;
+  const session: Session = sessions.get(id)!;
 
   // Clean up session
+  session.socket.disconnect(true);
   clearTimeout(session.timeout);
 
   // Clean up maps
-  sessions.delete(sessionId);
+  sessions.delete(id);
   if (session.code !== undefined) {
     codes.delete(session.code);
   }
 
   // Destroy peer
   if (session.peer !== undefined) {
-    Logger.warn(`[Session] Peer destroy: id=${session.peer}`);
+    Logger.warn(`[Session] Destroy peer: id=${session.peer}`);
 
-    sessions.get(session.peer)?.socket.disconnect(true);
     destroySession(session.peer);
   }
 
-  Logger.info(`[Session] Destroyed: id=${sessionId}`);
+  Logger.info(`[Session] Destroyed: id=${id}`);
+  Logger.debug(`[Session] Monitor: size=${sessions.size}`);
+  Logger.debug(`[Session] Monitor: code_size=${codes.size}`);
 };

@@ -5,8 +5,8 @@ import fs from 'fs';
 import helmet from 'helmet';
 import http from 'http';
 import https from 'https';
+import { Namespace, Server } from 'socket.io';
 
-import { Server } from 'socket.io';
 import { Logger } from '@/logger';
 
 // Load TLS config
@@ -23,11 +23,11 @@ if (process.env.TLS === 'on') {
     tlsCert = fs.readFileSync(process.env.TLS_CERT!, 'utf-8');
     tlsKey = fs.readFileSync(process.env.TLS_KEY!, 'utf-8');
   } catch (err: unknown) {
-    Logger.error(String(err));
+    Logger.error(`[HTTP] Fail to load TLS config:\n${err}`);
     process.exit(1);
   }
 
-  Logger.info('[Server] TLS enabled');
+  Logger.info(`[HTTP] TLS enabled: min=${tlsMinVer}, max=${tlsMaxVer}`);
 }
 
 // Create application
@@ -47,10 +47,14 @@ export const httpServer: http.Server = tls
   : http.createServer(app);
 
 // Create Socket.IO server
-export const wsServer: Server = new Server(httpServer, {
+const wsServer: Server = new Server(httpServer, {
   path: '/ws',
   serveClient: false
 });
+
+// Create namespaces
+export const senderNsp: Namespace = wsServer.of('/sender');
+export const receiverNsp: Namespace = wsServer.of('/receiver');
 
 // Use default middlewares
 app
@@ -78,12 +82,16 @@ app
         process.env.AUTH !== undefined &&
         req.headers['authorization'] !== process.env.AUTH
       ) {
+        Logger.warn(
+          `[HTTP] Unauthorized: auth=${req.headers['authorization']}`
+        );
+
         res.end();
         return;
       }
 
       // Next
-      Logger.trace(`[Server] ${req.method} ${req.path}`);
+      Logger.trace(`[HTTP] ${req.method} ${req.path}`);
       next();
     }
   );
