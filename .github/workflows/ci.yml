@@ -11,47 +11,54 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 9
+          version: latest
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
-          cache-dependency-path: frontend/pnpm-lock.yaml
+          cache-dependency-path: |
+            frontend/pnpm-lock.yaml
+            backend/pnpm-lock.yaml
+
       - name: Build frontend
         run: |
           cd frontend
-          pnpm config set auto-install-peers true
-          pnpm install --no-frozen-lockfile
-          pnpm build
+          pnpm install
+          pnpm run build
           cd ..
+
       - name: Build backend
         run: |
           cd backend
-          pnpm config set auto-install-peers true
-          pnpm install --no-frozen-lockfile
-          pnpm build
+          pnpm install
+          pnpm run build
           cd ..
+
       - name: Assemble server
         run: |
-          rm -rf server
           mkdir server
-          cp backend/dist/server.esm.min.js server/server.esm.min.js
-          cp backend/package.json server/package.json
+          cp backend/dist/server.esm.min.js backend/package.json server/
           cp -r frontend/dist/ server/public/
+
       - name: Build docker image
         run: docker build -t snrainiar/p2p-transfer .
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           path: server
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Push image to Docket Hub
         run: docker push snrainiar/p2p-transfer:latest
