@@ -14,6 +14,7 @@ type Session = {
   size?: number;
   socket: Socket;
   timeout?: NodeJS.Timeout;
+  type?: string;
 };
 
 // Code generator
@@ -78,7 +79,7 @@ export const handleSender = (socket: Socket): void => {
   /// Register listener
   socket.on(
     'register',
-    (name: string, size: number, callback: Function): void => {
+    (name: string, size: number, type: string, callback: Function): void => {
       // If code generated
       if (session.code !== undefined) {
         return;
@@ -89,13 +90,14 @@ export const handleSender = (socket: Socket): void => {
       session.key = crypto.randomBytes(32).toString('base64');
       session.name = name;
       session.size = size;
+      session.type = type;
       codes.set(session.code, id);
 
       // Return code & key
       callback(session.code, session.key);
 
       Logger.info(
-        `[Session] Registered: id=${id}, name=${name}, size=${size}, code=${session.code}, key=${session.key}`
+        `[Session] Registered: id=${id}, name=${name}, size=${size}, code=${session.code}, type=${session.type}, key=${session.key}`
       );
       Logger.debug(`[Session] Monitor: code_size=${codes.size}`);
     }
@@ -205,10 +207,16 @@ export const handleReceiver = (socket: Socket): void => {
     session.peer = peerId;
 
     // Return registered data
-    callback(true, peerSession.name, peerSession.size, peerSession.key);
+    callback(
+      true,
+      peerSession.name,
+      peerSession.size,
+      peerSession.type,
+      peerSession.key
+    );
 
     Logger.info(
-      `[Session] Requested: id=${id}, code=${code}, name=${peerSession.name}, size=${peerSession.size}, key=${peerSession.key}`
+      `[Session] Requested: id=${id}, code=${code}, name=${peerSession.name}, size=${peerSession.size}, type=${peerSession.type}, key=${peerSession.key}`
     );
   });
 
