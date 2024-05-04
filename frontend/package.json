@@ -13,6 +13,7 @@
     "@vueuse/core": "^10.9.0",
     "dexie": "^4.0.4",
     "eventemitter3": "^5.0.1",
+    "pako": "^2.1.0",
     "socket.io-client": "^4.7.5",
     "streamsaver": "^2.0.6",
     "vite-svg-loader": "^5.1.0",
@@ -22,16 +23,17 @@
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.1.66",
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.8",
+    "@types/pako": "^2.0.3",
     "@types/streamsaver": "^2.0.4",
     "@vitejs/plugin-vue": "^5.0.4",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
-    "postcss-load-config": "^5.0.3",
+    "postcss-load-config": "^5.1.0",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5",
     "unplugin-icons": "^0.18.5",
-    "vite": "^5.2.10",
+    "vite": "^5.2.11",
     "vue-tsc": "^2.0.16"
   }
 }

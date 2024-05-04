@@ -8,6 +8,9 @@ import {
   P2P_PACKET_SIZE
 } from '@/utils/p2p';
 
+// Stores
+import { useStore } from '@/stores';
+
 /**
  * Emit events:
  *
@@ -41,6 +44,9 @@ export class P2PSender extends EventEmitter {
   public constructor(private file: File, private key: CryptoKey) {
     super();
 
+    const { logger } = useStore();
+    logger.info('[sender] Created');
+
     // ICE candidate listener
     this.on(
       'addcandidate',
@@ -48,6 +54,10 @@ export class P2PSender extends EventEmitter {
         try {
           // Add ICE candidate
           await this.peers[idx].addIceCandidate(candidate);
+
+          logger.trace(
+            `[sender] Remote candidate: channel=${idx}, component=${candidate.component}, protocol=${candidate.protocol}, tcp_type=${candidate.tcpType}, type=${candidate.type}`
+          );
         } catch (err: unknown) {
           console.error(err);
           this.emit('error', 'webrtc_candidate');
@@ -65,6 +75,8 @@ export class P2PSender extends EventEmitter {
 
           // Set remote description
           await peer.setRemoteDescription(offer);
+
+          logger.trace(`[sender] Remote offer: channel=${idx}`);
 
           // Create answer
           const answer: RTCSessionDescriptionInit = await peer.createAnswer();
@@ -95,6 +107,10 @@ export class P2PSender extends EventEmitter {
         (ev: RTCPeerConnectionIceEvent): void => {
           if (ev.candidate !== null) {
             this.emit('candidate', i, ev.candidate);
+
+            logger.trace(
+              `[sender] New candidate: channel=${i}, component=${ev.candidate.component}, protocol=${ev.candidate.protocol}, tcp_type=${ev.candidate.tcpType}, type=${ev.candidate.type}`
+            );
           }
         }
       );
@@ -107,6 +123,10 @@ export class P2PSender extends EventEmitter {
             this.emit('error', 'webrtc_connection');
           }
         }
+
+        logger.trace(
+          `[sender] State change: channel=${i}, state=${peer.connectionState}`
+        );
       });
 
       // Data channel
@@ -192,7 +212,10 @@ export class P2PSender extends EventEmitter {
       const channel: RTCDataChannel = this.channels[target];
 
       // If channel idle
-      if (channel.bufferedAmount < P2P_BUFFER_SIZE) {
+      if (
+        channel.readyState === 'open' &&
+        channel.bufferedAmount < P2P_BUFFER_SIZE
+      ) {
         // Send data
         channel.send(data);
 

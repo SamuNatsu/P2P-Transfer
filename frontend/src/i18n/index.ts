@@ -64,8 +64,6 @@ export const setupI18n = async (): Promise<void> => {
 
 // Set language
 export const setLocale = async (locale: string): Promise<void> => {
-  console.debug(`[i18n] Try set locale to "${locale}"`);
-
   // Match support
   const match: [string, number][] = SUPPORT_LOCALES.map(
     (v: LocaleInfo): [string, number] => {
@@ -87,12 +85,6 @@ export const setLocale = async (locale: string): Promise<void> => {
       return [v.locale, matches];
     }
   ).sort(([l1, a], [l2, b]): number => (a !== b ? b - a : l1 < l2 ? -1 : 1));
-  console.debug(
-    `[i18n] Support locale matches: ${match
-      .filter(([_, n]): boolean => n > 0)
-      .map(([l, n]): string => `(${l},${n})`)
-      .join(',')}`
-  );
 
   // If has support
   if (match.length > 0 && match[0][1] > 0) {
@@ -103,33 +95,22 @@ export const setLocale = async (locale: string): Promise<void> => {
     useLocale().value = match[0][0];
     (i18n.global.locale as Ref<string>).value = match[0][0];
     document.documentElement.setAttribute('lang', match[0][0]);
-
-    console.debug(`[i18n] Locale "${locale}" set`);
   } else {
-    console.debug(`[i18n] Locale "${locale}" not support`);
-
     // Set locale
     useLocale().value = 'en';
     (i18n.global.locale as Ref<string>).value = 'en';
     document.documentElement.setAttribute('lang', 'en');
-
-    console.debug(`[i18n] Locale "${locale}" set`);
   }
 };
 
 // Load messages
 const loadMessages = async (locale: string): Promise<void> => {
-  console.debug(`[i18n] Try load locale "${locale}" messages`);
-
   // If already loaded
   if (i18n.global.availableLocales.includes(locale)) {
-    console.debug(`[i18n] Locale "${locale}" messages already loaded`);
     return;
   }
 
   // Load messages
   const msg: any = await import(`./locales/${locale}.json`);
   i18n.global.setLocaleMessage(locale, msg);
-
-  console.debug(`[i18n] Locale "${locale}" messages loaded`);
 };

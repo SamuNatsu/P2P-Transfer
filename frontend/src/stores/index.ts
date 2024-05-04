@@ -2,15 +2,34 @@
 import { createGlobalState } from '@vueuse/core';
 import { Ref, ref } from 'vue';
 
+// Types
+export type LogLevel = 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+
 // Export store
 export const useStore = createGlobalState(() => {
   /// States
+  const debugLogs: Ref<[LogLevel, string][]> = ref([]);
   const status: Ref<'home' | 'unsupport' | 'send' | 'receive'> = ref(
     typeof RTCPeerConnection !== 'function' ? 'unsupport' : 'home'
   );
+  const showDebug: Ref<boolean> = ref(false);
+
+  /// Actions
+  const addLog = (lv: LogLevel, msg: string): void => {
+    const time: string = `[${new Date().toISOString()}] `;
+    const level: string = `[${lv.padStart(5, ' ')}] `;
+    debugLogs.value.push([lv, time + level + msg]);
+  };
+  const logger = {
+    trace: (msg: string): void => addLog('TRACE', msg),
+    debug: (msg: string): void => addLog('DEBUG', msg),
+    info: (msg: string): void => addLog('INFO', msg),
+    warn: (msg: string): void => addLog('WARN', msg),
+    error: (msg: string): void => addLog('ERROR', msg)
+  };
 
   /// Return store
-  return { status };
+  return { debugLogs, status, showDebug, logger };
 });
 
 // Get formatted number string

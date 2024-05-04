@@ -2,6 +2,9 @@
 import Dexie, { Table } from 'dexie';
 import streamSaver from 'streamsaver';
 
+// Stores
+import { useStore } from '@/stores';
+
 // Types
 interface DataBlock {
   id?: number;
@@ -21,11 +24,15 @@ class P2PCache extends Dexie {
     super('P2PCache');
 
     this.version(1).stores({ dataBlocks: 'id, ch' });
+    this.clear();
   }
 
   /// Clear cache
   public async clear(): Promise<void> {
+    const { logger } = useStore();
+
     await this.dataBlocks.clear();
+    logger.info('[cache] Cleared');
   }
 
   /// Set cache
@@ -34,50 +41,64 @@ class P2PCache extends Dexie {
   }
 
   /// Get cache
-  public async get(id: number): Promise<ArrayBuffer | null> {
-    return (await this.dataBlocks.get(id))?.data ?? null;
+  private async get(id: number): Promise<ArrayBuffer | undefined> {
+    return (await this.dataBlocks.get(id))?.data;
   }
 
   /// Memory download
   public async memoryDownload(name: string, type: string): Promise<void> {
-    const blocks: ArrayBuffer[] = [];
+    const { logger } = useStore();
 
+    const blocks: ArrayBuffer[] = [];
     for (let i = 0; true; i++) {
-      const block: ArrayBuffer | null = await this.get(i);
-      if (block === null) {
+      const block: ArrayBuffer | undefined = await this.get(i);
+      if (block === undefined) {
         break;
       }
 
       blocks.push(block);
     }
     this.clear();
+    logger.debug(`[cache] Blocks collected: count=${blocks.length}`);
 
     const blob: Blob = new Blob(blocks, { type });
     const url: string = URL.createObjectURL(blob);
+    logger.debug(`[cache] Blob merged: size=${blob.size}, type=${type}`);
 
     const el: HTMLAnchorElement = document.createElement('a');
     el.download = name;
     el.href = url;
     el.click();
+
+    logger.info(`[cache] Memory downloaded: name=${name}`);
   }
 
   /// Stream download
   public async streamDownload(name: string, size: number): Promise<void> {
+    const { logger } = useStore();
+
     const stream: WritableStream = streamSaver.createWriteStream(name, {
       size
     });
     const writer: WritableStreamDefaultWriter = stream.getWriter();
+    logger.debug(`[cache] Writer stream created: size=${size}`);
 
-    for (let i = 0; true; i++) {
-      const block: ArrayBuffer | null = await this.get(i);
-      if (block === null) {
+    let i: number = 0;
+    while (true) {
+      const block: ArrayBuffer | undefined = await this.get(i);
+      if (block === undefined) {
         break;
       }
 
+      i++;
       await writer.write(new Uint8Array(block));
     }
     this.clear();
+    logger.debug(`[cache] Blocks collected: count=${i}`);
+
     await writer.close();
+
+    logger.info(`[cache] Stream downloaded: name=${name}`);
   }
 }
 

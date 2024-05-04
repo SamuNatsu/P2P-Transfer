@@ -33,132 +33,128 @@ export class P2PReceiver extends EventEmitter {
   public constructor(private key: CryptoKey) {
     super();
 
-    (async (): Promise<void> => {
-      await cache.clear();
+    // ICE candidate listener
+    this.on(
+      'addcandidate',
+      async (idx: number, candidate: RTCIceCandidate): Promise<void> => {
+        try {
+          // Add ICE candidate
+          await this.peers[idx].addIceCandidate(candidate);
+        } catch (err: unknown) {
+          console.error(err);
+          this.emit('error', 'webrtc_candidate');
+        }
+      }
+    );
+
+    // Answer listener
+    this.on(
+      'answer',
+      async (idx: number, answer: RTCSessionDescription): Promise<void> => {
+        try {
+          // Get peer
+          const peer: RTCPeerConnection = this.peers[idx];
+
+          // Set remote description
+          await peer.setRemoteDescription(answer);
+        } catch (err: unknown) {
+          console.error(err);
+          this.emit('error', 'webrtc_answer');
+        }
+      }
+    );
+
+    // Create connections
+    for (let i = 0; i < P2P_CONNECTION_COUNT; i++) {
+      // Create connection
+      const peer: RTCPeerConnection = new RTCPeerConnection({
+        iceServers: P2P_ICE_SERVERS
+      });
+      this.peers.push(peer);
 
       // ICE candidate listener
-      this.on(
-        'addcandidate',
-        async (idx: number, candidate: RTCIceCandidate): Promise<void> => {
-          try {
-            // Add ICE candidate
-            await this.peers[idx].addIceCandidate(candidate);
-          } catch (err: unknown) {
-            console.error(err);
-            this.emit('error', 'webrtc_candidate');
+      peer.addEventListener(
+        'icecandidate',
+        (ev: RTCPeerConnectionIceEvent): void => {
+          if (ev.candidate !== null) {
+            this.emit('candidate', i, ev.candidate);
           }
         }
       );
 
-      // Answer listener
-      this.on(
-        'answer',
-        async (idx: number, answer: RTCSessionDescription): Promise<void> => {
-          try {
-            // Get peer
-            const peer: RTCPeerConnection = this.peers[idx];
-
-            // Set remote description
-            await peer.setRemoteDescription(answer);
-          } catch (err: unknown) {
-            console.error(err);
-            this.emit('error', 'webrtc_answer');
+      // Connection state change listener
+      peer.addEventListener('connectionstatechange', (): void => {
+        if (peer.connectionState === 'failed') {
+          this.failedPeerNum++;
+          if (this.failedPeerNum >= P2P_CONNECTION_COUNT) {
+            this.emit('error', 'webrtc_connection');
           }
         }
-      );
+      });
 
-      // Create connections
-      for (let i = 0; i < P2P_CONNECTION_COUNT; i++) {
-        // Create connection
-        const peer: RTCPeerConnection = new RTCPeerConnection({
-          iceServers: P2P_ICE_SERVERS
-        });
-        this.peers.push(peer);
+      // Create data channel
+      const channel: RTCDataChannel = peer.createDataChannel(`ch${i}`);
+      channel.binaryType = 'arraybuffer';
+      this.channels.push(channel);
 
-        // ICE candidate listener
-        peer.addEventListener(
-          'icecandidate',
-          (ev: RTCPeerConnectionIceEvent): void => {
-            if (ev.candidate !== null) {
-              this.emit('candidate', i, ev.candidate);
-            }
-          }
-        );
+      // Error listener
+      channel.addEventListener('error', (): void => {
+        this.emit('error', 'webrtc_channel');
+      });
 
-        // Connection state change listener
-        peer.addEventListener('connectionstatechange', (): void => {
-          if (peer.connectionState === 'failed') {
-            this.failedPeerNum++;
-            if (this.failedPeerNum >= P2P_CONNECTION_COUNT) {
-              this.emit('error', 'webrtc_connection');
-            }
-          }
-        });
+      // Open listener
+      channel.addEventListener('open', (): void => {
+        if (this.openedChanelNum === 0) {
+          this.emit('start');
+        }
+        this.openedChanelNum++;
+      });
 
-        // Create data channel
-        const channel: RTCDataChannel = peer.createDataChannel(`ch${i}`);
-        channel.binaryType = 'arraybuffer';
-        this.channels.push(channel);
+      // Message listener
+      channel.addEventListener(
+        'message',
+        async (ev: MessageEvent<ArrayBuffer>): Promise<void> => {
+          try {
+            // Get data & index
+            const data: ArrayBuffer = ev.data;
+            const [idx, decryptedData] = await this.unwrapData(data);
 
-        // Error listener
-        channel.addEventListener('error', (): void => {
-          this.emit('error', 'webrtc_channel');
-        });
-
-        // Open listener
-        channel.addEventListener('open', (): void => {
-          if (this.openedChanelNum === 0) {
-            this.emit('start');
-          }
-          this.openedChanelNum++;
-        });
-
-        // Message listener
-        channel.addEventListener(
-          'message',
-          async (ev: MessageEvent<ArrayBuffer>): Promise<void> => {
-            try {
-              // Get data & index
-              const data: ArrayBuffer = ev.data;
-              const [idx, decryptedData] = await this.unwrapData(data);
-
-              // Update data
-              this.recvBytes += decryptedData.byteLength;
-
-              // Emit event
-              this.emit('progress', this.recvBytes);
-
-              // Report progress
-              const buffer: ArrayBuffer = new ArrayBuffer(8);
-              const view: DataView = new DataView(buffer);
-              view.setBigUint64(0, BigInt(this.recvBytes));
-              channel.send(buffer);
-
-              // Store in cache
-              await cache.set(idx, i, decryptedData);
-            } catch (err: unknown) {
-              console.error(err);
-              this.emit('error', 'webrtc_message');
-            }
-          }
-        );
-
-        // Start negotiating
-        peer
-          .createOffer()
-          .then(async (offer: RTCSessionDescriptionInit): Promise<void> => {
-            // Set local description
-            await peer.setLocalDescription(offer);
+            // Update data
+            this.recvBytes += decryptedData.byteLength;
 
             // Emit event
-            this.emit('offer', i, offer);
-          })
-          .catch((err: unknown): void => {
+            this.emit('progress', this.recvBytes);
+
+            // Report progress
+            const buffer: ArrayBuffer = new ArrayBuffer(8);
+            const view: DataView = new DataView(buffer);
+            view.setBigUint64(0, BigInt(this.recvBytes));
+            channel.send(buffer);
+
+            // Store in cache
+            await cache.set(idx, i, decryptedData);
+          } catch (err: unknown) {
             console.error(err);
-            this.emit('error', 'webrtc_offer');
-          });
-      }
-    })();
+            this.emit('error', 'webrtc_message');
+          }
+        }
+      );
+
+      // Start negotiating
+      peer
+        .createOffer()
+        .then(async (offer: RTCSessionDescriptionInit): Promise<void> => {
+          // Set local description
+          await peer.setLocalDescription(offer);
+
+          // Emit event
+          this.emit('offer', i, offer);
+        })
+        .catch((err: unknown): void => {
+          console.error(err);
+          this.emit('error', 'webrtc_offer');
+        });
+    }
   }
 
   /// Unwrap data

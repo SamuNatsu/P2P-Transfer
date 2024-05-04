@@ -8,6 +8,7 @@ import { setupI18n } from '@/i18n';
 // Components
 import AppHeader from '@/components/app/AppHeader.vue';
 import AppNav from '@/components/app/AppNav.vue';
+import DebugLogger from '@/components/DebugLogger.vue';
 import LanguageSelector from '@/components/LanguageSelector.vue';
 
 import { RouterView } from 'vue-router';
@@ -40,6 +41,7 @@ onBeforeMount((): void => {
       </Transition>
     </RouterView>
   </div>
+  <DebugLogger />
 </template>
 
 <style scoped>
