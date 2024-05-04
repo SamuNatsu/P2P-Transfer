@@ -4,7 +4,7 @@ import { ComputedRef, Ref, computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { Receiver } from '@/utils/receiver';
-import { cache } from '@/utils/p2p/p2p-cache';
+import { cache } from '@/utils/file-cache';
 
 // External stores
 import { formatNumber, formatTime } from '@/stores';
@@ -65,7 +65,7 @@ export const useRecvFileStore = createGlobalState(() => {
 
   /// Actions
   const cleanup = (): void => {
-    _receiver?.cleanup();
+    _receiver?.destroy();
     _receiver = null;
 
     cache.clear();

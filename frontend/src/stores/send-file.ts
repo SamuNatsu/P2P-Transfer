@@ -64,7 +64,7 @@ export const useSendFileStore = createGlobalState(() => {
 
   /// Actions
   const cleanup = (): void => {
-    _sender?.cleanup();
+    _sender?.destroy();
     _sender = null;
   };
   const interrupt = (): void => {

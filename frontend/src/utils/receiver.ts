@@ -1,42 +1,24 @@
 /// Receiver
 import EventEmitter from 'eventemitter3';
 import { Socket, io } from 'socket.io-client';
+import { ConcurrentReceiver } from '@/utils/concurrent-receiver';
 
-import { P2PReceiver } from '@/utils/p2p/p2p-receiver';
-
-/**
- * Emit events:
- *
- * failed: (reason)
- * start: ()
- * progress: (recvBytes)
- * statistic: (speed, time)
- * finished: ()
- */
-
-/**
- * Socket emit events:
- *
- * request: (code, callback(name, size, key))
- * candidate: (index, candidate)
- * offer: (index, offer)
- */
-
-/**
- * Socket on events:
- *
- * session: (id)
- * candidate: (index, candidate)
- * answer: (index, answer)
- */
+// Types
+type ReceiverEventType =
+  | 'failed'
+  | 'finished'
+  | 'progress'
+  | 'start'
+  | 'statistic'
+  | 'requested';
 
 // Export class
-export class Receiver extends EventEmitter {
+export class Receiver extends EventEmitter<ReceiverEventType> {
   private fileSize: number = 0;
   private id: string | null = null;
   private key: CryptoKey | null = null;
   private lstRecvBytes: number = 0;
-  private receiver: P2PReceiver | null = null;
+  private receiver: ConcurrentReceiver | null = null;
   private recvBytes: number = 0;
   private socket: Socket;
   private startAt: number = 0;
@@ -72,7 +54,7 @@ export class Receiver extends EventEmitter {
     this.socket.on(
       'candidate',
       (idx: number, candidate: RTCIceCandidate): void => {
-        this.receiver!.emit('addcandidate', idx, candidate);
+        this.receiver!.emit('remotecandidate', idx, candidate);
       }
     );
 
@@ -80,7 +62,7 @@ export class Receiver extends EventEmitter {
     this.socket.on(
       'answer',
       (idx: number, answer: RTCSessionDescription): void => {
-        this.receiver!.emit('answer', idx, answer);
+        this.receiver!.emit('remoteanswer', idx, answer);
       }
     );
 
@@ -113,20 +95,20 @@ export class Receiver extends EventEmitter {
           ['decrypt']
         );
 
-        // Create P2P receiver
-        this.receiver = new P2PReceiver(this.key);
+        // Create concurrent receiver
+        this.receiver = new ConcurrentReceiver(this.key);
         this.receiver.on('error', (reason: string): void => {
+          this.destroy();
           this.emit('failed', reason);
-          this.cleanup();
         });
         this.receiver.on(
-          'candidate',
+          'localcandidate',
           (idx: number, candidate: RTCIceCandidate): void => {
             this.socket.emit('candidate', idx, candidate);
           }
         );
         this.receiver.on(
-          'offer',
+          'localoffer',
           (idx: number, offer: RTCSessionDescription): void => {
             this.socket.emit('offer', idx, offer);
           }
@@ -153,7 +135,7 @@ export class Receiver extends EventEmitter {
             this.emit('finished', this.fileSize / totalTime);
 
             clearInterval(this.staticTimer);
-            setTimeout((): void => this.cleanup(), 5000);
+            setTimeout((): void => this.destroy(), 5000);
           }
         });
 
@@ -163,10 +145,10 @@ export class Receiver extends EventEmitter {
     );
   }
 
-  /// Clean up
-  public cleanup(): void {
+  /// Destroy
+  public destroy(): void {
     this.socket.disconnect();
-    this.receiver?.cleanup();
+    this.receiver?.destroy();
     clearInterval(this.staticTimer);
   }
 }

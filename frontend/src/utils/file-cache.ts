@@ -1,9 +1,8 @@
-/// P2P cache
+/// File cache
 import Dexie, { Table } from 'dexie';
 import streamSaver from 'streamsaver';
-
-// Stores
 import { useStore } from '@/stores';
+import { P2P_CONNECTION_COUNT } from '@/utils/config';
 
 // Types
 interface DataBlock {
@@ -16,12 +15,12 @@ interface DataBlock {
 streamSaver.mitm = import.meta.env.BASE_URL + 'mitm.html?version=2.0.0';
 
 // Export class
-class P2PCache extends Dexie {
+class FileCache extends Dexie {
   private dataBlocks!: Table<DataBlock>;
 
   /// Constructor
   public constructor() {
-    super('P2PCache');
+    super('File Cache');
 
     this.version(1).stores({ dataBlocks: 'id, ch' });
     this.clear();
@@ -32,7 +31,7 @@ class P2PCache extends Dexie {
     const { logger } = useStore();
 
     await this.dataBlocks.clear();
-    logger.info('[cache] Cleared');
+    logger.info('[file-cache] Cleared');
   }
 
   /// Set cache
@@ -49,6 +48,8 @@ class P2PCache extends Dexie {
   public async memoryDownload(name: string, type: string): Promise<void> {
     const { logger } = useStore();
 
+    await this.statistic();
+
     const blocks: ArrayBuffer[] = [];
     for (let i = 0; true; i++) {
       const block: ArrayBuffer | undefined = await this.get(i);
@@ -59,29 +60,31 @@ class P2PCache extends Dexie {
       blocks.push(block);
     }
     this.clear();
-    logger.debug(`[cache] Blocks collected: count=${blocks.length}`);
+    logger.debug(`[file-cache] Blocks collected: count=${blocks.length}`);
 
     const blob: Blob = new Blob(blocks, { type });
     const url: string = URL.createObjectURL(blob);
-    logger.debug(`[cache] Blob merged: size=${blob.size}, type=${type}`);
+    logger.debug(`[file-cache] Blob merged: size=${blob.size}, type=${type}`);
 
     const el: HTMLAnchorElement = document.createElement('a');
     el.download = name;
     el.href = url;
     el.click();
 
-    logger.info(`[cache] Memory downloaded: name=${name}`);
+    logger.info(`[file-cache] Memory downloaded: name=${name}`);
   }
 
   /// Stream download
   public async streamDownload(name: string, size: number): Promise<void> {
     const { logger } = useStore();
 
+    await this.statistic();
+
     const stream: WritableStream = streamSaver.createWriteStream(name, {
       size
     });
     const writer: WritableStreamDefaultWriter = stream.getWriter();
-    logger.debug(`[cache] Writer stream created: size=${size}`);
+    logger.debug(`[file-cache] Writer stream created: size=${size}`);
 
     let i: number = 0;
     while (true) {
@@ -94,13 +97,25 @@ class P2PCache extends Dexie {
       await writer.write(new Uint8Array(block));
     }
     this.clear();
-    logger.debug(`[cache] Blocks collected: count=${i}`);
+    logger.debug(`[file-cache] Blocks collected: count=${i}`);
 
     await writer.close();
 
-    logger.info(`[cache] Stream downloaded: name=${name}`);
+    logger.info(`[file-cache] Stream downloaded: name=${name}`);
+  }
+
+  /// Statistic
+  private async statistic(): Promise<void> {
+    const { logger } = useStore();
+
+    const count: number[] = [];
+    for (let i = 0; i < P2P_CONNECTION_COUNT; i++) {
+      count.push(await this.dataBlocks.where({ ch: i }).count());
+    }
+
+    logger.debug(`[file-cache] Statistic: list=${count}`);
   }
 }
 
 // Export cache
-export const cache: P2PCache = new P2PCache();
+export const cache: FileCache = new FileCache();
