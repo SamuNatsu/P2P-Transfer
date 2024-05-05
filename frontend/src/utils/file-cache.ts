@@ -1,5 +1,6 @@
 /// File cache
 import Dexie, { Table } from 'dexie';
+import FileSaver from 'file-saver';
 import streamSaver from 'streamsaver';
 import { useStore } from '@/stores';
 import { P2P_CONNECTION_COUNT } from '@/utils/config';
@@ -63,13 +64,9 @@ class FileCache extends Dexie {
     logger.debug(`[file-cache] Blocks collected: count=${blocks.length}`);
 
     const blob: Blob = new Blob(blocks, { type });
-    const url: string = URL.createObjectURL(blob);
     logger.debug(`[file-cache] Blob merged: size=${blob.size}, type=${type}`);
 
-    const el: HTMLAnchorElement = document.createElement('a');
-    el.download = name;
-    el.href = url;
-    el.click();
+    FileSaver.saveAs(blob, name);
 
     logger.info(`[file-cache] Memory downloaded: name=${name}`);
   }
