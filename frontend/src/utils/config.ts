@@ -2,7 +2,7 @@
 import StunServers from '@/assets/stun-servers.txt?raw';
 
 // Connection count
-export const P2P_CONNECTION_COUNT: number = 8;
+export const P2P_CONNECTION_COUNT: number = 16;
 
 // ICE server list
 export const P2P_ICE_SERVERS: RTCIceServer[] = StunServers.split('\n')

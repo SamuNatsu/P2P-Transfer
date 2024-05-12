@@ -1,5 +1,5 @@
 # Base image
-FROM node:20-alpine
+FROM node:lts-alpine
 
 # Environment variables
 ENV NODE_ENV=production
@@ -17,4 +17,4 @@ COPY ./server /app
 RUN npm install
 
 # Start command
-CMD ["npm", "run", "start:docker"]
+CMD npm run start:docker
