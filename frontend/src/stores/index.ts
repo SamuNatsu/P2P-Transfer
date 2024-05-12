@@ -42,6 +42,9 @@ export const useStore = createGlobalState(() => {
     debugLogs.value.push([lv, time + level + msg]);
   };
   const logger = {
+    clear: (): void => {
+      debugLogs.value = [];
+    },
     trace: (msg: string): void => addLog('TRACE', msg),
     debug: (msg: string): void => addLog('DEBUG', msg),
     info: (msg: string): void => addLog('INFO', msg),

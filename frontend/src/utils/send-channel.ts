@@ -45,7 +45,9 @@ export class SendChannel extends EventEmitter<SendChannelEventType> {
         .addIceCandidate(candidate)
         .then((): void => {
           logger.trace(
-            `[send-channel #${this.index}] Remote candidate: component=${candidate.component}, protocol=${candidate.protocol}, tcpType=${candidate.tcpType}, type=${candidate.type}`
+            `[send-channel #${
+              this.index
+            }] Remote candidate: candidate=${JSON.stringify(candidate)}`
           );
         })
         .catch((err: unknown): void => {
@@ -109,15 +111,12 @@ export class SendChannel extends EventEmitter<SendChannelEventType> {
 
     // Create connection
     this.channel = undefined;
-    this.connection = new RTCPeerConnection({
-      iceServers: P2P_ICE_SERVERS,
-      peerIdentity: `ch${this.index}`
-    });
+    this.connection = new RTCPeerConnection({ iceServers: P2P_ICE_SERVERS });
 
     // Connection state change listener
     this.connection.addEventListener('connectionstatechange', (): void => {
       logger.info(
-        `[send-channel ${this.index}] State change: state=${this.connection.connectionState}`
+        `[send-channel #${this.index}] State change: state=${this.connection.connectionState}`
       );
 
       if (this.connection.connectionState === 'failed') {
@@ -165,7 +164,9 @@ export class SendChannel extends EventEmitter<SendChannelEventType> {
         if (ev.candidate !== null) {
           this.emit('localcandidate', ev.candidate);
           logger.trace(
-            `[send-channel #${this.index}] Local candidate: component=${ev.candidate.component}, protocol=${ev.candidate.protocol}, tcpType=${ev.candidate.tcpType}, type=${ev.candidate.type}`
+            `[send-channel #${
+              this.index
+            }] Local candidate: candidate=${JSON.stringify(ev.candidate)}`
           );
         }
       }
