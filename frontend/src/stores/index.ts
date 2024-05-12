@@ -9,10 +9,14 @@ export type LogLevel = 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 export const useStore = createGlobalState(() => {
   /// States
   const debugLogs: Ref<[LogLevel, string][]> = ref([]);
-  const status: Ref<'home' | 'unsupport' | 'send' | 'receive'> = ref(
-    typeof RTCPeerConnection !== 'function' ? 'unsupport' : 'home'
-  );
+  const status: Ref<'home' | 'unsupport' | 'send' | 'receive'> = ref('home');
   const showDebug: Ref<boolean> = ref(false);
+
+  setInterval((): void => {
+    if (typeof RTCPeerConnection !== 'function') {
+      status.value = 'unsupport';
+    }
+  }, 1000);
 
   /// Actions
   const addLog = (lv: LogLevel, msg: string): void => {
