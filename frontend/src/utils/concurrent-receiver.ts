@@ -17,6 +17,7 @@ type ConcurrentReceiverEventType =
 // Export class
 export class ConcurrentReceiver extends EventEmitter<ConcurrentReceiverEventType> {
   private channels: RecvChannel[] = [];
+  private failed: number = 0;
   private recvBytes: number = 0;
   private started: boolean = false;
 
@@ -49,6 +50,13 @@ export class ConcurrentReceiver extends EventEmitter<ConcurrentReceiverEventType
 
       // Error listener
       channel.on('error', (err: unknown): void => {
+        if (err === 'connection') {
+          this.failed++;
+          if (this.failed >= P2P_CONNECTION_COUNT) {
+            this.emit('error', err);
+          }
+          return;
+        }
         this.emit('error', err);
       });
 

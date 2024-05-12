@@ -20,6 +20,7 @@ const PACKET_SIZE: number = 16384;
 export class ConcurrentSender extends EventEmitter<ConcurrentSenderEventType> {
   private channels: SendChannel[] = [];
   private currentChannel: number = 0;
+  private failed: number = 0;
   private fileOffset: number = 0;
   private started: boolean = false;
   private packetIndex: number = 0;
@@ -55,6 +56,13 @@ export class ConcurrentSender extends EventEmitter<ConcurrentSenderEventType> {
 
       // Error listener
       channel.on('error', (err: unknown): void => {
+        if (err === 'connection') {
+          this.failed++;
+          if (this.failed >= P2P_CONNECTION_COUNT) {
+            this.emit('error', err);
+          }
+          return;
+        }
         this.emit('error', err);
       });
 

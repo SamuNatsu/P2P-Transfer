@@ -18,6 +18,7 @@ type RecvChannelEventType =
 export class RecvChannel extends EventEmitter<RecvChannelEventType> {
   private connection!: RTCPeerConnection;
   private channel?: RTCDataChannel;
+  private opened: boolean = false;
 
   /// Constructor
   public constructor(private index: number, private key: CryptoKey) {
@@ -83,7 +84,11 @@ export class RecvChannel extends EventEmitter<RecvChannelEventType> {
       );
 
       if (this.connection.connectionState === 'failed') {
-        this.emit('error', 'connection');
+        if (this.opened) {
+          this.emit('error', 'failed');
+        } else {
+          this.emit('error', 'connection');
+        }
       }
     });
 
@@ -103,7 +108,9 @@ export class RecvChannel extends EventEmitter<RecvChannelEventType> {
     );
 
     // Create channel
-    this.channel = this.connection.createDataChannel(`rc-${this.index}`);
+    this.channel = this.connection.createDataChannel(`rc-${this.index}`, {
+      ordered: false
+    });
     this.channel.binaryType = 'arraybuffer';
 
     // Error listener
@@ -129,6 +136,7 @@ export class RecvChannel extends EventEmitter<RecvChannelEventType> {
 
     // Open listener
     this.channel.addEventListener('open', (): void => {
+      this.opened = true;
       this.emit('start');
       logger.info(`[recv-channel #${this.index}] Opened`);
     });

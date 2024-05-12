@@ -21,6 +21,7 @@ const BUFFER_SIZE: number = 4194304;
 export class SendChannel extends EventEmitter<SendChannelEventType> {
   private connection!: RTCPeerConnection;
   private channel?: RTCDataChannel;
+  private opened: boolean = false;
 
   /// Getters
   public get ready(): boolean {
@@ -120,7 +121,11 @@ export class SendChannel extends EventEmitter<SendChannelEventType> {
       );
 
       if (this.connection.connectionState === 'failed') {
-        this.emit('error', 'connection');
+        if (this.opened) {
+          this.emit('error', 'failed');
+        } else {
+          this.emit('error', 'connection');
+        }
       }
     });
 
@@ -151,6 +156,7 @@ export class SendChannel extends EventEmitter<SendChannelEventType> {
 
         // Open listener
         this.channel.addEventListener('open', (): void => {
+          this.opened = true;
           this.emit('start');
           logger.info(`[send-channel #${this.index}] Opened`);
         });

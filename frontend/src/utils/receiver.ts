@@ -3,7 +3,6 @@ import EventEmitter from 'eventemitter3';
 import { Socket, io } from 'socket.io-client';
 import { useStore } from '@/stores';
 import { ConcurrentReceiver } from '@/utils/concurrent-receiver';
-import { P2P_CONNECTION_COUNT } from '@/utils/config';
 
 // Types
 type ReceiverEventType =
@@ -16,7 +15,6 @@ type ReceiverEventType =
 
 // Export class
 export class Receiver extends EventEmitter<ReceiverEventType> {
-  private failedCount: number = 0;
   private fileSize: number = 0;
   private id: string | null = null;
   private key: CryptoKey | null = null;
@@ -104,12 +102,8 @@ export class Receiver extends EventEmitter<ReceiverEventType> {
         // Create concurrent receiver
         this.receiver = new ConcurrentReceiver(this.key);
         this.receiver.on('error', (reason: string): void => {
-          this.failedCount++;
-
-          if (this.failedCount >= P2P_CONNECTION_COUNT) {
-            this.destroy();
-            this.emit('failed', reason);
-          }
+          this.destroy();
+          this.emit('failed', reason);
         });
         this.receiver.on(
           'localcandidate',
