@@ -109,7 +109,10 @@ export class SendChannel extends EventEmitter<SendChannelEventType> {
 
     // Create connection
     this.channel = undefined;
-    this.connection = new RTCPeerConnection({ iceServers: P2P_ICE_SERVERS });
+    this.connection = new RTCPeerConnection({
+      iceServers: P2P_ICE_SERVERS,
+      peerIdentity: `ch${this.index}`
+    });
 
     // Connection state change listener
     this.connection.addEventListener('connectionstatechange', (): void => {
