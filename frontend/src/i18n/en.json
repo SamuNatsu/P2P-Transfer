@@ -11,6 +11,7 @@
     "receive_file": "Receive File",
     "save_file": "Save File",
     "send_file": "Send File",
+    "start": "Start",
     "start_sending": "Start Sending"
   },
   "index": {
@@ -27,6 +28,7 @@
     "use_memory": "Use Memory Saving",
     "use_stream": "Use Stream Saving",
     "saving": {
+      "$": "Saving",
       "cons": "Cons: ",
       "pros": "Pros: ",
       "text": [
@@ -48,17 +50,21 @@
     "Built with <a href=\"https://cn.vuejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Vue3</a> & <a href=\"https://nodejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Node.js</a> for modern Web tech"
   ],
   "fail": {
+    "channel": "Channel error",
+    "connection": "Fail to construct connection",
+    "failed": "Connection failed",
     "invalid_code": "Invalid receive code",
+    "local_answer": "Fail to create answer",
+    "local_offer": "Fail to create offer",
+    "message": "Fail to handle message",
     "not_found": "Receive code not found or has been used",
+    "remote_answer": "Fail to handle remote answer",
+    "remote_candidate": "Fail to handle remote candidate",
+    "remote_offer": "Fail to handle remote offer",
+    "send": "Fail to send data",
     "server": "Fail to connect to signal server",
     "timeout": "Session timeout",
-    "unsupport": "Browser unsupport WebRTC",
-    "webrtc_answer": "Fail to handle answer",
-    "webrtc_candidate": "Fail to add candidate",
-    "webrtc_channel": "P2P channel error",
-    "webrtc_connection": "Fail to create P2P connection",
-    "webrtc_message": "Fail to handle message",
-    "webrtc_offer": "Fail to handle offer"
+    "unsupport": "Browser unsupport WebRTC"
   },
   "status": {
     "connecting": "Connecting",

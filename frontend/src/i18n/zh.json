@@ -11,6 +11,7 @@
     "receive_file": "接收文件",
     "save_file": "保存文件",
     "send_file": "发送文件",
+    "start": "开始",
     "start_sending": "开始发送"
   },
   "index": {
@@ -27,6 +28,7 @@
     "use_memory": "使用内存保存",
     "use_stream": "使用数据流保存",
     "saving": {
+      "$": "保存中",
       "cons": "缺点：",
       "pros": "优点：",
       "text": [
@@ -48,17 +50,21 @@
     "使用 <a href=\"https://cn.vuejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Vue3</a> 和 <a href=\"https://nodejs.org/\" rel=\"noopener noreferer\" target=\"_blank\">Node.js</a> 构建，拥抱现代 Web 技术"
   ],
   "fail": {
+    "channel": "信道错误",
+    "connection": "无法建立连接",
+    "failed": "连接意外断开",
     "invalid_code": "取件码不合法",
+    "local_answer": "无法创建回复",
+    "local_offer": "无法创建请求",
+    "message": "无法处理数据",
     "not_found": "取件码不存在或已被使用",
+    "remote_answer": "无法处理远程回复",
+    "remote_candidate": "无法处理远程候选",
+    "remote_offer": "无法处理远程请求",
+    "send": "无法发送数据",
     "server": "无法连接信令服务器",
     "timeout": "会话超时",
-    "unsupport": "浏览器不支持 WebRTC",
-    "webrtc_answer": "无法处理 P2P 回复",
-    "webrtc_candidate": "无法添加 P2P 候选",
-    "webrtc_channel": "P2P 通道错误",
-    "webrtc_connection": "无法建立 P2P 连接",
-    "webrtc_message": "无法处理数据包",
-    "webrtc_offer": "无法处理 P2P 请求"
+    "unsupport": "浏览器不支持 WebRTC"
   },
   "status": {
     "connecting": "连接中",

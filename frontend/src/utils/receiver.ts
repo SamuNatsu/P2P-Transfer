@@ -41,7 +41,7 @@ export class Receiver extends EventEmitter<ReceiverEventType> {
 
     // Reconnect failed listener
     this.socket.io.on('reconnect_failed', (): void => {
-      this.emit('failed', 'signal_server');
+      this.emit('failed', 'server');
     });
 
     // Session timeout listener
