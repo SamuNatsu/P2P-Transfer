@@ -29,6 +29,7 @@ jobs:
       - name: Build frontend
         run: |
           cd frontend
+          echo "package-manager-strict=false" > .npmrc
           pnpm install
           pnpm run build
           cd ..
@@ -36,6 +37,7 @@ jobs:
       - name: Build backend
         run: |
           cd backend
+          echo "package-manager-strict=false" > .npmrc
           pnpm install
           pnpm run build
           cd ..
