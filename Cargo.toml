@@ -1,0 +1,10 @@
+[package]
+name = "p2p-transfer"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "p2pt"
+path = "src-backend/main.rs"
+
+[dependencies]
