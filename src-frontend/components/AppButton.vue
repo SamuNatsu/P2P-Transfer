@@ -23,10 +23,19 @@ const colorClass = computed(() => {
 </script>
 
 <template>
-  <button
-    :class="['cursor-pointer flex gap-2 items-center px-4 py-2 rounded transition-colors', colorClass]"
-  >
+  <button :class="colorClass">
     <slot name="icon"></slot>
     <span>{{ label }}</span>
   </button>
 </template>
+
+<style lang="postcss" scoped>
+@import "tailwindcss";
+
+button {
+  @apply flex gap-2 items-center px-4 py-2;
+  @apply rounded transition-colors;
+  @apply disabled:bg-neutral-500 disabled:opacity-50;
+  @apply cursor-pointer disabled:cursor-default;
+}
+</style>
