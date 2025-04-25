@@ -39,6 +39,20 @@ const onInput = (ev: Event, idx: number) => {
   }
 };
 
+const onKeyDown = (ev: KeyboardEvent, idx: number) => {
+  const el = ev.target as HTMLInputElement;
+  if (ev.key === 'Backspace' || ev.key === 'Delete') {
+    el.value = '';
+    data.value[idx] = '';
+    code.value = data.value.join('');
+    completed.value = code.value.length === props.length;
+
+    if (idx > 0) {
+      refRoot.value?.querySelectorAll('input')[idx - 1]?.focus();
+    }
+  }
+};
+
 /* Hooks */
 onMounted(() => {
   refRoot.value?.querySelector('input')?.focus();
@@ -53,6 +67,7 @@ onMounted(() => {
         type="text"
         :value="data[idx]"
         @input="onInput($event, idx)"
+        @keydown="onKeyDown($event, idx)"
       />
     </template>
   </div>
