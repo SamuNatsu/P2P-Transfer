@@ -4,4 +4,4 @@ version = 4
 
 [[package]]
 name = "p2p-transfer"
-version = "0.1.0"
+version = "2.0.0"
