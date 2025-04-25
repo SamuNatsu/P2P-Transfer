@@ -9,7 +9,13 @@ import { version } from '@/../package.json';
       <h1 class="font-bold text-4xl">P2P Transfer</h1>
       <h2 class="absolute -bottom-1.5 right-0 text-sm">v{{ version }}</h2>
     </header>
-    <RouterView />
+    <div class="flex flex-col items-center">
+      <RouterView v-slot="{ Component }">
+        <Transition name="fade">
+          <component :is="Component" />
+        </Transition>
+      </RouterView>
+    </div>
     <footer class="flex gap-8 text-sm">
       <a
         href="https://github.com/SamuNatsu/P2P-Transfer"
@@ -21,3 +27,21 @@ import { version } from '@/../package.json';
     </footer>
   </div>
 </template>
+
+<style lang="postcss" scoped>
+@import "tailwindcss";
+
+.fade-enter-active,
+.fade-leave-active {
+  @apply transition-opacity;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  @apply opacity-0;
+}
+
+.fade-leave-active {
+  @apply absolute;
+}
+</style>
