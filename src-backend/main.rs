@@ -1,5 +1,6 @@
 mod handler;
 mod middleware;
+mod session;
 mod signal;
 
 use std::env;
