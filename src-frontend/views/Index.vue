@@ -13,7 +13,7 @@ const router = useRouter();
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-8">
     <AppButton label="Upload" variant="info" @click="router.push('/upload')">
       <template #icon>
         <MdiFileUpload class="text-2xl" />
