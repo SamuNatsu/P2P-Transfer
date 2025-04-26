@@ -26,9 +26,14 @@ RUN sed -i 's#dummy.rs#src-backend/main.rs#' Cargo.toml
 COPY src-backend /app/src-backend
 
 FROM be-base AS be-build
+ARG TARGETPLATFORM
 RUN \
   cargo build --release && \
-  upx --best --lzma -q /app/target/x86_64-unknown-linux-musl/release/p2pt
+  upx --best --lzma -q /app/target/$(\
+    [ "$TARGETPLATFORM" = "linux/amd64" ] && \
+    echo x86_64-unknown-linux-musl || \
+    echo aarch64-unknown-linux-musl\
+  )/release/p2pt
 
 # Build final
 FROM scratch
