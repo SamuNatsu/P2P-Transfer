@@ -5,7 +5,7 @@ on:
     branches:
       - next
     paths-ignore:
-      - "!.github/frontend-ci.yaml"
+      - "!.github/workflows/frontend-ci.yaml"
       - .vscode/**
       - src-backend/**
       - .gitignore

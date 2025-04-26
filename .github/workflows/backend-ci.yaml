@@ -1,0 +1,84 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - next
+    paths:
+      - .github/workflows/backend-ci.yaml
+      - src-backend/**
+      - Cargo.lock
+      - Cargo.toml
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform:
+          - os-name: Linux-i686
+            runs-on: ubuntu-latest
+            target: i686-unknown-linux-musl
+
+          - os-name: Linux-x86_64
+            runs-on: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+
+          - os-name: Linux-aarch64
+            runs-on: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+
+          - os-name: Linux-riscv64
+            runs-on: ubuntu-latest
+            target: riscv64gc-unknown-linux-gnu
+            skip-upx: true
+
+          - os-name: Windows-i686
+            runs-on: windows-latest
+            target: i686-pc-windows-msvc
+
+          - os-name: Windows-x86_64
+            runs-on: windows-latest
+            target: x86_64-pc-windows-msvc
+
+          - os-name: Windows-aarch64
+            runs-on: windows-latest
+            target: aarch64-pc-windows-msvc
+            skip-upx: true
+
+    name: Build - ${{ matrix.platform.os-name }}
+    runs-on: ${{ matrix.platform.runs-on }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: "--locked --release"
+          strip: false
+
+      - name: Setup UPX for Linux platform
+        run: sudo apt install -y upx
+        if: ${{ matrix.platform.runs-on == 'ubuntu-latest' }}
+
+      - name: Setup UPX for Windows platform
+        run: choco install upx -y
+        if: ${{ matrix.platform.runs-on == 'windows-latest' }}
+
+      - name: Compress binary target for Linux platform
+        run: upx --best --lzma -q target/${{ matrix.platform.target }}/release/p2pt
+        if: ${{ matrix.platform.runs-on == 'ubuntu-latest' && !matrix.platform.skip-upx }}
+
+      - name: Compress binary target for Windows platform
+        run: upx --best --lzma -q target/${{ matrix.platform.target }}/release/p2pt.exe
+        if: ${{ matrix.platform.runs-on == 'windows-latest' && !matrix.platform.skip-upx }}
+
+      - name: Publish artifacts and release
+        uses: houseabsolute/actions-rust-release@v0
+        with:
+          executable-name: p2pt
+          release-tag-prefix: disabled
+          target: ${{ matrix.platform.target }}
+          changes-file: ""
