@@ -5,12 +5,13 @@ on:
     branches:
       - next
     paths-ignore:
-      - "!.github/workflows/frontend-ci.yaml"
+      - .github/**
       - .vscode/**
       - src-backend/**
       - .gitignore
       - Cargo.lock
       - Cargo.toml
+      - "!.github/workflows/frontend-ci.yaml"
   workflow_dispatch:
 
 jobs:
