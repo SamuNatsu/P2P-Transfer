@@ -29,7 +29,7 @@ FROM be-base AS be-build
 ARG TARGETPLATFORM
 RUN \
   cargo build --release && \
-  upx --best --lzma -q /app/target/$(\
+  upx --best --lzma -q -o /app/p2pt /app/target/$(\
     [ "$TARGETPLATFORM" = "linux/amd64" ] && \
     echo x86_64-unknown-linux-musl || \
     echo aarch64-unknown-linux-musl\
@@ -38,6 +38,6 @@ RUN \
 # Build final
 FROM scratch
 COPY --from=fe-build /app/dist /dist
-COPY --from=be-build /app/target/x86_64-unknown-linux-musl/release/p2pt /p2pt
+COPY --from=be-build /app/p2pt /p2pt
 EXPOSE 8080
 CMD [ "/p2pt" ]
