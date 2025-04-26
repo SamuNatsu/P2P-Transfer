@@ -12,8 +12,8 @@ importers:
         specifier: ^3.5.13
         version: 3.5.13(typescript@5.8.3)
       vue-router:
-        specifier: ^4.5.0
-        version: 4.5.0(vue@3.5.13(typescript@5.8.3))
+        specifier: ^4.5.1
+        version: 4.5.1(vue@3.5.13(typescript@5.8.3))
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -22,11 +22,11 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3
       '@rsbuild/core':
-        specifier: ^1.3.11
-        version: 1.3.11
+        specifier: ^1.3.12
+        version: 1.3.12
       '@rsbuild/plugin-vue':
         specifier: ^1.0.7
-        version: 1.0.7(@rsbuild/core@1.3.11)(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))
+        version: 1.0.7(@rsbuild/core@1.3.12)(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))
       '@tailwindcss/postcss':
         specifier: ^4.1.4
         version: 4.1.4
@@ -173,8 +173,8 @@ packages:
   '@module-federation/webpack-bundler-runtime@0.13.0':
     resolution: {integrity: sha512-ycgAsFeCTo+3GR8JxkhCyg2UZm6Au98ISdLTdVXYphO4UDcO/KjqyJen1LXEslkpCEohDj68Prei2fUHRruK6g==}
 
-  '@rsbuild/core@1.3.11':
-    resolution: {integrity: sha512-6Qh31oiHjRElMuUpS6U+/6wWRaqMtlxWB86KmL849ZJTDtdvSZsxOCZ2goOuTPqzavUth+QC6Hkq8p19aveEJA==}
+  '@rsbuild/core@1.3.12':
+    resolution: {integrity: sha512-I+10Ti8wF8MN860XAi4jsOvhjSO5OiC9v4Vlr5cQIGVman9jSyMUhRcbUdHXHW3aykrfGSSu5LxsFD4IiEqp4w==}
     engines: {node: '>=16.10.0'}
     hasBin: true
 
@@ -183,56 +183,56 @@ packages:
     peerDependencies:
       '@rsbuild/core': 1.x
 
-  '@rspack/binding-darwin-arm64@1.3.6':
-    resolution: {integrity: sha512-Ejf2m01lQEM30qkyRZmGbuKzUGdTuirVs9yE8GBCvs3q3GsGQRVkYlQNtuvVtXyvF9TlfW+N6nInoheRpsvBfA==}
+  '@rspack/binding-darwin-arm64@1.3.7':
+    resolution: {integrity: sha512-/5k4H0M7vvu7uorhc0OQKdQ7ybcjcJA//ptfYB646Ca/XY8FI1T/H88prPNrLNu97FGqUT4QWo5AHj01XymfDw==}
     cpu: [arm64]
     os: [darwin]
 
-  '@rspack/binding-darwin-x64@1.3.6':
-    resolution: {integrity: sha512-VR3aJbKNjqrBbxEQRXJriQxA98eHvbb6uTiZi5nCKMmBjeFrAiRWhbogiLehCtMrcKVzsvtX1U7qT/JusWXa4w==}
+  '@rspack/binding-darwin-x64@1.3.7':
+    resolution: {integrity: sha512-/eNcZFDHxo5RVmIxgVM5zxCXmufeWpvviWJMDjhycS175nJb6103YWpu6H0lHgbj0GnHM/Q2VjVRFNhaGbXqdA==}
     cpu: [x64]
     os: [darwin]
 
-  '@rspack/binding-linux-arm64-gnu@1.3.6':
-    resolution: {integrity: sha512-xleG9XJp6BoURNhSrbz9Wnig2I3xQxKj3Sk/MynPYXMGVBF9wUbgUpvrdIlm5wenwxGpLftpPdXkI9bkf6+5JQ==}
+  '@rspack/binding-linux-arm64-gnu@1.3.7':
+    resolution: {integrity: sha512-bSxA4MgGOdSvf/nTqNMuLeeyWS4Okh1iPskGuyAv/Sdf7cGbflUyZe6+w7A9BZEFR0CVTfj3f8kt73N+lu72Kg==}
     cpu: [arm64]
     os: [linux]
 
-  '@rspack/binding-linux-arm64-musl@1.3.6':
-    resolution: {integrity: sha512-P27mxcL0cu5wBDFjoQrvRIpisraoA+hmVuOoeCvC/FT7aUIfLNzt94eCLZqAtZ7J7kNFoDXgJwCx3gAf1D0JdA==}
+  '@rspack/binding-linux-arm64-musl@1.3.7':
+    resolution: {integrity: sha512-i6QK6YodCA5R8/ShRylkyunwvNcRx/Q7af14jSCa7TPOi6pPoDUL2pmwGcJBk1uPc2wjQwAMZzfJjTWNjEyW2Q==}
     cpu: [arm64]
     os: [linux]
 
-  '@rspack/binding-linux-x64-gnu@1.3.6':
-    resolution: {integrity: sha512-vDXC/29U26uYaSNJ9wttdykz+VPU6qbpBMHjS6aQWtp3kUYnI3w11f4HvzZYr9c1UbfQBFemljBuz/3elQPrNQ==}
+  '@rspack/binding-linux-x64-gnu@1.3.7':
+    resolution: {integrity: sha512-6AmOHLOv4XAK7Y5cFDBtnetIZ44MqG8Q6wZ20zjql/khTxsRZa/edis/eUppGb8fy5gzi+qqSAznEZ+Qj3LMrQ==}
     cpu: [x64]
     os: [linux]
 
-  '@rspack/binding-linux-x64-musl@1.3.6':
-    resolution: {integrity: sha512-utNCoMVmveoGxVuswugsKpyToP5wAk/8tN5CiuWgNsnYc8szFfXEENJet1x1YmxB8C+TqqbiNpsgwba5ckNFdw==}
+  '@rspack/binding-linux-x64-musl@1.3.7':
+    resolution: {integrity: sha512-rPt0c9UHp5AxWHhjziEtd2uwiWyzM4UZLFJV6hawBWOoIQf2uLSl3fp0HTqxpslfTh3uo5ymhHN/bV48m5THzg==}
     cpu: [x64]
     os: [linux]
 
-  '@rspack/binding-win32-arm64-msvc@1.3.6':
-    resolution: {integrity: sha512-HawcuYzozRmDnjInNQooKWU2mABE29oRQa+k254RuUNVVhmjcU8IgTSZ6nLduWqBLqxIYATOm/4zFi4InEuUXw==}
+  '@rspack/binding-win32-arm64-msvc@1.3.7':
+    resolution: {integrity: sha512-+Db7NGBzad1dCcSm94uARkIIhbVv1+BXAl1duLBnYQMfqsu/pirsInE9wbp7WVUbSl2hmdRi9MYgWACjoReo4g==}
     cpu: [arm64]
     os: [win32]
 
-  '@rspack/binding-win32-ia32-msvc@1.3.6':
-    resolution: {integrity: sha512-JrB0CbM+wKVBVjAeBBy2j9Lh1yUcikgh3fxIiWcFwhWxsDTnQwmIV5yIFCoXPeJP0m4a67s1Biuf9Z0LETy+7Q==}
+  '@rspack/binding-win32-ia32-msvc@1.3.7':
+    resolution: {integrity: sha512-VPqqC0U6FolGoonmZYBBiFyWjQ4+X+e/l/t4QZP2DRonlpE418+MdCxq2ldVGgvtxwERNlz61zxEX9yh/8KOfw==}
     cpu: [ia32]
     os: [win32]
 
-  '@rspack/binding-win32-x64-msvc@1.3.6':
-    resolution: {integrity: sha512-JROZTgWAdY14jZEhw6Pzf5Kr8LlYA9XlifooV7I0vnj0z5z0T5iXNM/Pvd/SIwy+5wV8CQRYJUKg1KHL9h+9Nw==}
+  '@rspack/binding-win32-x64-msvc@1.3.7':
+    resolution: {integrity: sha512-zi9tKxlq85lSYTb1sbEluLjZlkbjuoJoy2TaNzVlfNkmiJ6EiqBbyCWoPPBJRP6HQ9pG25W0y4NWKp7iVhiBvg==}
     cpu: [x64]
     os: [win32]
 
-  '@rspack/binding@1.3.6':
-    resolution: {integrity: sha512-+HCDkav5Szq6aKLYLeWPirjQf0pVkYEMMP8BS8Q7YnGMSTYikfwpkyGXcFuzjkq1BzKz30iOjPimB+HcBHdIWg==}
+  '@rspack/binding@1.3.7':
+    resolution: {integrity: sha512-jSXLktIGmNNZssxT+fjZ31IyUO7lRoFrFO+XuqKlMpbnHE8yCrpaHE6rLyDPVO4Vnl6xx/df8usUXtZwIc4jrw==}
 
-  '@rspack/core@1.3.6':
-    resolution: {integrity: sha512-U1YB1GEyNKvzUwqwxzZ3QeqKFU7HKTSGEQk2NpDVgj47uvLgtlMhyqA15aykGNwIu6Jtql59dCp+Qlw6UwP05w==}
+  '@rspack/core@1.3.7':
+    resolution: {integrity: sha512-InXnEmImLKkxzkY7XaAozycjMvS5myf/o3zu1rw5tNq3ONxWvW0QOHVTcrF0FbeKQ/jCOFSfdaoFjbXjdUs38w==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       '@swc/helpers': '>=0.5.1'
@@ -347,8 +347,8 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
-  '@types/node@22.15.0':
-    resolution: {integrity: sha512-99S8dWD2DkeE6PBaEDw+In3aar7hdoBvjyJMR6vaKBTzpvR0P00ClzJMOoVrj9D2+Sy/YCwACYHnBTpMhg1UCA==}
+  '@types/node@22.15.2':
+    resolution: {integrity: sha512-uKXqKN9beGoMdBfcaTY1ecwz6ctxuJAcUlwE55938g0ZJ8lRxwAZqRz2AJ4pzpt5dHdTPMB863UZ0ESiFUcP7A==}
 
   '@vue/compiler-core@3.5.13':
     resolution: {integrity: sha512-oOdAkwqUfW1WqpwSYJce06wvt6HljgY3fGeM9NcVA1HaYOij3mZG9Rkysn0OHuyUAGMbEbARIpsG+LPVlBJ5/Q==}
@@ -873,8 +873,8 @@ packages:
       vue:
         optional: true
 
-  vue-router@4.5.0:
-    resolution: {integrity: sha512-HDuk+PuH5monfNuY+ct49mNmkCRK4xJAV9Ts4z9UFc4rzdDnxQLyCMGGc8pKhZhHTVzfanpNwB/lwqevcBwI4w==}
+  vue-router@4.5.1:
+    resolution: {integrity: sha512-ogAF3P97NPm8fJsE4by9dwSYtDwXIY1nFY9T6DyQnGHd1E2Da94w9JIolpe42LJGIl0DwOHBi8TcRPlPGwbTtw==}
     peerDependencies:
       vue: ^3.2.0
 
@@ -897,8 +897,8 @@ packages:
   webpack-virtual-modules@0.6.2:
     resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
 
-  webpack@5.99.6:
-    resolution: {integrity: sha512-TJOLrJ6oeccsGWPl7ujCYuc0pIq2cNsuD6GZDma8i5o5Npvcco/z+NKvZSFsP0/x6SShVb0+X2JK/JHUjKY9dQ==}
+  webpack@5.99.7:
+    resolution: {integrity: sha512-CNqKBRMQjwcmKR0idID5va1qlhrqVUKpovi+Ec79ksW8ux7iS1+A6VqzfZXgVYCFRKl7XL5ap3ZoMpwBJxcg0w==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     peerDependencies:
@@ -1032,19 +1032,19 @@ snapshots:
       '@module-federation/runtime': 0.13.0
       '@module-federation/sdk': 0.13.0
 
-  '@rsbuild/core@1.3.11':
+  '@rsbuild/core@1.3.12':
     dependencies:
-      '@rspack/core': 1.3.6(@swc/helpers@0.5.17)
+      '@rspack/core': 1.3.7(@swc/helpers@0.5.17)
       '@rspack/lite-tapable': 1.0.1
       '@swc/helpers': 0.5.17
       core-js: 3.41.0
       jiti: 2.4.2
 
-  '@rsbuild/plugin-vue@1.0.7(@rsbuild/core@1.3.11)(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))':
+  '@rsbuild/plugin-vue@1.0.7(@rsbuild/core@1.3.12)(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))':
     dependencies:
-      '@rsbuild/core': 1.3.11
-      vue-loader: 17.4.2(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))(webpack@5.99.6)
-      webpack: 5.99.6
+      '@rsbuild/core': 1.3.12
+      vue-loader: 17.4.2(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))(webpack@5.99.7)
+      webpack: 5.99.7
     transitivePeerDependencies:
       - '@swc/core'
       - '@vue/compiler-sfc'
@@ -1053,49 +1053,49 @@ snapshots:
       - vue
       - webpack-cli
 
-  '@rspack/binding-darwin-arm64@1.3.6':
+  '@rspack/binding-darwin-arm64@1.3.7':
     optional: true
 
-  '@rspack/binding-darwin-x64@1.3.6':
+  '@rspack/binding-darwin-x64@1.3.7':
     optional: true
 
-  '@rspack/binding-linux-arm64-gnu@1.3.6':
+  '@rspack/binding-linux-arm64-gnu@1.3.7':
     optional: true
 
-  '@rspack/binding-linux-arm64-musl@1.3.6':
+  '@rspack/binding-linux-arm64-musl@1.3.7':
     optional: true
 
-  '@rspack/binding-linux-x64-gnu@1.3.6':
+  '@rspack/binding-linux-x64-gnu@1.3.7':
     optional: true
 
-  '@rspack/binding-linux-x64-musl@1.3.6':
+  '@rspack/binding-linux-x64-musl@1.3.7':
     optional: true
 
-  '@rspack/binding-win32-arm64-msvc@1.3.6':
+  '@rspack/binding-win32-arm64-msvc@1.3.7':
     optional: true
 
-  '@rspack/binding-win32-ia32-msvc@1.3.6':
+  '@rspack/binding-win32-ia32-msvc@1.3.7':
     optional: true
 
-  '@rspack/binding-win32-x64-msvc@1.3.6':
+  '@rspack/binding-win32-x64-msvc@1.3.7':
     optional: true
 
-  '@rspack/binding@1.3.6':
+  '@rspack/binding@1.3.7':
     optionalDependencies:
-      '@rspack/binding-darwin-arm64': 1.3.6
-      '@rspack/binding-darwin-x64': 1.3.6
-      '@rspack/binding-linux-arm64-gnu': 1.3.6
-      '@rspack/binding-linux-arm64-musl': 1.3.6
-      '@rspack/binding-linux-x64-gnu': 1.3.6
-      '@rspack/binding-linux-x64-musl': 1.3.6
-      '@rspack/binding-win32-arm64-msvc': 1.3.6
-      '@rspack/binding-win32-ia32-msvc': 1.3.6
-      '@rspack/binding-win32-x64-msvc': 1.3.6
+      '@rspack/binding-darwin-arm64': 1.3.7
+      '@rspack/binding-darwin-x64': 1.3.7
+      '@rspack/binding-linux-arm64-gnu': 1.3.7
+      '@rspack/binding-linux-arm64-musl': 1.3.7
+      '@rspack/binding-linux-x64-gnu': 1.3.7
+      '@rspack/binding-linux-x64-musl': 1.3.7
+      '@rspack/binding-win32-arm64-msvc': 1.3.7
+      '@rspack/binding-win32-ia32-msvc': 1.3.7
+      '@rspack/binding-win32-x64-msvc': 1.3.7
 
-  '@rspack/core@1.3.6(@swc/helpers@0.5.17)':
+  '@rspack/core@1.3.7(@swc/helpers@0.5.17)':
     dependencies:
       '@module-federation/runtime-tools': 0.13.0
-      '@rspack/binding': 1.3.6
+      '@rspack/binding': 1.3.7
       '@rspack/lite-tapable': 1.0.1
       caniuse-lite: 1.0.30001715
     optionalDependencies:
@@ -1187,7 +1187,7 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
-  '@types/node@22.15.0':
+  '@types/node@22.15.2':
     dependencies:
       undici-types: 6.21.0
 
@@ -1437,7 +1437,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.15.0
+      '@types/node': 22.15.2
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -1608,14 +1608,14 @@ snapshots:
 
   tapable@2.2.1: {}
 
-  terser-webpack-plugin@5.3.14(webpack@5.99.6):
+  terser-webpack-plugin@5.3.14(webpack@5.99.7):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       jest-worker: 27.5.1
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
       terser: 5.39.0
-      webpack: 5.99.6
+      webpack: 5.99.7
 
   terser@5.39.0:
     dependencies:
@@ -1658,17 +1658,17 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
-  vue-loader@17.4.2(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))(webpack@5.99.6):
+  vue-loader@17.4.2(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))(webpack@5.99.7):
     dependencies:
       chalk: 4.1.2
       hash-sum: 2.0.0
       watchpack: 2.4.2
-      webpack: 5.99.6
+      webpack: 5.99.7
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.13
       vue: 3.5.13(typescript@5.8.3)
 
-  vue-router@4.5.0(vue@3.5.13(typescript@5.8.3)):
+  vue-router@4.5.1(vue@3.5.13(typescript@5.8.3)):
     dependencies:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.13(typescript@5.8.3)
@@ -1692,10 +1692,11 @@ snapshots:
 
   webpack-virtual-modules@0.6.2: {}
 
-  webpack@5.99.6:
+  webpack@5.99.7:
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.7
+      '@types/json-schema': 7.0.15
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
@@ -1714,7 +1715,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 4.3.2
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.14(webpack@5.99.6)
+      terser-webpack-plugin: 5.3.14(webpack@5.99.7)
       watchpack: 2.4.2
       webpack-sources: 3.2.3
     transitivePeerDependencies:
