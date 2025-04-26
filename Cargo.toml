@@ -7,6 +7,13 @@ edition = "2024"
 name = "p2pt"
 path = "src-backend/main.rs"
 
+[profile.release]
+strip = true
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+
 [dependencies]
 anyhow = "1.0.98"
 axum = { version = "0.8.3", features = ["http2"] }
