@@ -54,11 +54,11 @@ jobs:
           args: "--locked --release"
           strip: false
 
-      - name: Setup UPX for Linux platform
+      - name: Set up UPX for Linux platform
         run: sudo apt install -y upx
         if: ${{ matrix.platform.runs-on == 'ubuntu-latest' }}
 
-      - name: Setup UPX for Windows platform
+      - name: Set up UPX for Windows platform
         run: choco install upx -y
         if: ${{ matrix.platform.runs-on == 'windows-latest' }}
 
