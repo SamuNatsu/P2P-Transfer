@@ -6,6 +6,7 @@ use std::{
 use rand::TryRngCore;
 use socketioxide::extract::SocketRef;
 
+#[derive(Debug)]
 pub struct Session {
     pub code: String,
     pub file_name: String,
@@ -38,7 +39,7 @@ impl Session {
         file_mime: String,
         file_size: u64,
         sender: SocketRef,
-    ) -> Weak<Mutex<Session>> {
+    ) -> (Weak<Mutex<Session>>, String) {
         let mut map = Self::get_session_map().lock().unwrap();
         let code = loop {
             let code = Self::gen_code();
@@ -56,9 +57,9 @@ impl Session {
             receiver: None,
         };
         let s = Arc::new(Mutex::new(s));
-        map.insert(code, Arc::clone(&s));
+        map.insert(code.clone(), Arc::clone(&s));
 
-        Arc::downgrade(&s)
+        (Arc::downgrade(&s), code)
     }
 
     pub fn find(code: &String) -> Option<Weak<Mutex<Session>>> {

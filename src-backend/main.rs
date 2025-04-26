@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
 
     // Create socket.io service
-    let (sio_layer, sio) = SocketIo::builder().req_path("/ws").build_layer();
+    let (sio_layer, sio) = SocketIo::new_layer();
     sio.ns("/sender", handler::sender);
     sio.ns("/receiver", handler::receiver);
 
