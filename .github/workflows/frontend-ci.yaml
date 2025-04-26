@@ -4,14 +4,15 @@ on:
   push:
     branches:
       - next
-    paths-ignore:
-      - .github/**
-      - .vscode/**
-      - src-backend/**
-      - .gitignore
-      - Cargo.lock
-      - Cargo.toml
-      - "!.github/workflows/frontend-ci.yaml"
+    paths:
+      - .github/workflows/frontend-ci.yaml
+      - src-frontend/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - postcss.config.ts
+      - rsbuild.config.ts
+      - tsconfig.json
   workflow_dispatch:
 
 jobs:
