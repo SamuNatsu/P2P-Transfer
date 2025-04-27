@@ -14,7 +14,7 @@ import AppButton from '@/components/AppButton.vue';
 const router = useRouter();
 
 /* Reactive */
-const support = ref(false);
+const support = ref(true);
 
 /* Hooks */
 onBeforeMount(() => {
