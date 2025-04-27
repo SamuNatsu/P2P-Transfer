@@ -27,3 +27,22 @@ export const formatNumber = (
     return `${(x / Math.pow(power, 3)).toFixed(1)}T${unit}`;
   }
 };
+
+export const formatTime = (t: number) => {
+  t = Math.trunc(t);
+  if (t < 0 || t >= 36000) {
+    return '> 100h';
+  }
+
+  const sc = t % 60;
+  const mn = Math.trunc(t / 60) % 60;
+  const hr = Math.trunc(t / 3600);
+
+  return [
+    hr > 0 ? `${hr}h` : null,
+    hr > 0 || mn > 0 ? `${mn}m` : null,
+    `${sc}s`,
+  ]
+    .filter((v) => v !== null)
+    .join(' ');
+};
