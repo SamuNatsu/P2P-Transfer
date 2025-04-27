@@ -22,11 +22,11 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3
       '@rsbuild/core':
-        specifier: ^1.3.12
-        version: 1.3.12
+        specifier: ^1.3.13
+        version: 1.3.13
       '@rsbuild/plugin-vue':
         specifier: ^1.0.7
-        version: 1.0.7(@rsbuild/core@1.3.12)(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))
+        version: 1.0.7(@rsbuild/core@1.3.13)(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))
       '@tailwindcss/postcss':
         specifier: ^4.1.4
         version: 4.1.4
@@ -173,8 +173,8 @@ packages:
   '@module-federation/webpack-bundler-runtime@0.13.0':
     resolution: {integrity: sha512-ycgAsFeCTo+3GR8JxkhCyg2UZm6Au98ISdLTdVXYphO4UDcO/KjqyJen1LXEslkpCEohDj68Prei2fUHRruK6g==}
 
-  '@rsbuild/core@1.3.12':
-    resolution: {integrity: sha512-I+10Ti8wF8MN860XAi4jsOvhjSO5OiC9v4Vlr5cQIGVman9jSyMUhRcbUdHXHW3aykrfGSSu5LxsFD4IiEqp4w==}
+  '@rsbuild/core@1.3.13':
+    resolution: {integrity: sha512-FIRV1ncOYYLCEGJDL8ZPKyH4J15lJS54KfeGf3Eacy5zUhT+dAkI2+0ZWH/s9NlaXA/vlRq6SJF9Z2Y96dO13Q==}
     engines: {node: '>=16.10.0'}
     hasBin: true
 
@@ -512,8 +512,8 @@ packages:
     resolution: {integrity: sha512-3UDv+G9CsCKO1WKMGw9fwq/SWJYbI0c5Y7LU1AXYoDdbhE2AHQ6N6Nb34sG8Fj7T5APy8qXDCKuuIHd1BR0tVA==}
     engines: {node: '>=8'}
 
-  electron-to-chromium@1.5.142:
-    resolution: {integrity: sha512-Ah2HgkTu/9RhTDNThBtzu2Wirdy4DC9b0sMT1pUhbkZQ5U/iwmE+PHZX1MpjD5IkJCc2wSghgGG/B04szAx07w==}
+  electron-to-chromium@1.5.143:
+    resolution: {integrity: sha512-QqklJMOFBMqe46k8iIOwA9l2hz57V2OKMmP5eSWcUvwx+mASAsbU+wkF1pHjn9ZVSBPrsYWr4/W/95y5SwYg2g==}
 
   enhanced-resolve@5.18.1:
     resolution: {integrity: sha512-ZSW3ma5GkcQBIpwZTSRAI8N71Uuwgs93IezB7mf7R60tC8ZbJideoDNKjHn2O9KIlx6rkGTTEk1xUCK2E1Y2Yg==}
@@ -1032,7 +1032,7 @@ snapshots:
       '@module-federation/runtime': 0.13.0
       '@module-federation/sdk': 0.13.0
 
-  '@rsbuild/core@1.3.12':
+  '@rsbuild/core@1.3.13':
     dependencies:
       '@rspack/core': 1.3.7(@swc/helpers@0.5.17)
       '@rspack/lite-tapable': 1.0.1
@@ -1040,9 +1040,9 @@ snapshots:
       core-js: 3.41.0
       jiti: 2.4.2
 
-  '@rsbuild/plugin-vue@1.0.7(@rsbuild/core@1.3.12)(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))':
+  '@rsbuild/plugin-vue@1.0.7(@rsbuild/core@1.3.13)(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))':
     dependencies:
-      '@rsbuild/core': 1.3.12
+      '@rsbuild/core': 1.3.13
       vue-loader: 17.4.2(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3))(webpack@5.99.7)
       webpack: 5.99.7
     transitivePeerDependencies:
@@ -1352,7 +1352,7 @@ snapshots:
   browserslist@4.24.4:
     dependencies:
       caniuse-lite: 1.0.30001715
-      electron-to-chromium: 1.5.142
+      electron-to-chromium: 1.5.143
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.24.4)
 
@@ -1389,7 +1389,7 @@ snapshots:
 
   detect-libc@2.0.4: {}
 
-  electron-to-chromium@1.5.142: {}
+  electron-to-chromium@1.5.143: {}
 
   enhanced-resolve@5.18.1:
     dependencies:
