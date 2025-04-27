@@ -14,12 +14,12 @@ const router = useRouter();
 
 <template>
   <div class="flex flex-col gap-8">
-    <AppButton label="Upload" variant="info" @click="router.push('/upload')">
+    <AppButton label="Send" variant="info" @click="router.push('/send')">
       <template #icon>
         <MdiFileUpload class="text-2xl" />
       </template>
     </AppButton>
-    <AppButton label="Download" variant="info" @click="router.push('/download')">
+    <AppButton label="Receive" variant="info" @click="router.push('/receive')">
       <template #icon>
         <MdiFileDownload class="text-2xl" />
       </template>

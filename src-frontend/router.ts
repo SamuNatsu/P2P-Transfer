@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 /* Views */
-import Download from '@/views/Download.vue';
 import Index from '@/views/Index.vue';
-import Upload from '@/views/Upload.vue';
+import Receive from '@/views/Receive.vue';
+import Send from '@/views/Send.vue';
 
 // Export router
 export const router = createRouter({
@@ -14,12 +14,12 @@ export const router = createRouter({
       component: Index,
     },
     {
-      path: '/upload',
-      component: Upload,
+      path: '/send',
+      component: Send,
     },
     {
-      path: '/download',
-      component: Download,
+      path: '/receive',
+      component: Receive,
     },
   ],
 });
