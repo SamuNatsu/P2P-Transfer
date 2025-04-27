@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import { version } from '@/../package.json';
+import { cacheDb } from '@/databases/cache';
+import { onBeforeMount, onBeforeUnmount } from 'vue';
+
+/* Hooks */
+onBeforeMount(() => cacheDb.delete({ disableAutoOpen: false }));
+onBeforeUnmount(() => cacheDb.delete());
 </script>
 
 <template>
