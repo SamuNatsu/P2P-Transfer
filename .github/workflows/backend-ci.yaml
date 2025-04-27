@@ -3,7 +3,7 @@ name: Backend CI
 on:
   push:
     branches:
-      - next
+      - main
     paths:
       - .github/workflows/backend-ci.yaml
       - src-backend/**

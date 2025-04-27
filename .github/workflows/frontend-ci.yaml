@@ -3,7 +3,7 @@ name: Frontend CI
 on:
   push:
     branches:
-      - next
+      - main
     paths:
       - .github/workflows/frontend-ci.yaml
       - src-frontend/**
