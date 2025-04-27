@@ -1,0 +1,24 @@
+# Sender IN
+
+[new]{file_name, file_mime, file_size} -> ?code
+[forward]{*}
+
+# Sender OUT
+
+[error]|existed,not exists,destroyed,no receiver,*|
+[connected]
+[message]{*}
+[destroyed]
+
+# Receiver IN
+
+[find]code -> ?{file_name, file_mime, file_size, available}
+[connect]
+[forward]{*}
+
+# Receiver OUT
+
+[error]|not found,destroyed,no candidate,not available,not exists,*|
+[connected]
+[message]{*}
+[destroyed]

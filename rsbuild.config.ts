@@ -11,6 +11,15 @@ export default defineConfig({
     title: 'P2P Transfer',
   },
   plugins: [pluginVue()],
+  server: {
+    proxy: {
+      '/socket.io': {
+        changeOrigin: true,
+        target: 'http://localhost:8080',
+        ws: true,
+      },
+    },
+  },
   source: {
     entry: { index: './src-frontend' },
   },
