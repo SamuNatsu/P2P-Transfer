@@ -1,3 +1,15 @@
+export const checkWebRTC = () => {
+  if (!window.RTCPeerConnection) {
+    return false;
+  }
+
+  const pc = new RTCPeerConnection();
+  const dataCh = 'createDataChannel' in pc;
+  pc.close();
+
+  return dataCh;
+};
+
 export const formatNumber = (
   x: number,
   unit: string = '',
