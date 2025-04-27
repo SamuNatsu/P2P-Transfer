@@ -33,7 +33,7 @@ const onChange = (ev: Event) => {
           <b>Name:</b> {{ file.name }}
         </p>
         <p class="max-w-60 overflow-hidden text-ellipsis whitespace-nowrap">
-          <b>MIME:</b> {{ file.type.length === 0 ? "unknown" : file.type }}
+          <b>Type:</b> {{ file.type.length === 0 ? "unknown" : file.type }}
         </p>
         <p><b>Size:</b> {{ formatNumber(file.size, "B") }}</p>
       </div>
