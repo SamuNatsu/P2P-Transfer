@@ -9,13 +9,13 @@ onBeforeUnmount(() => cacheDb.delete());
 </script>
 
 <template>
-  <div class="flex flex-col gap-24 h-screen items-center w-full">
+  <div class="flex flex-col h-screen items-center w-full">
     <header class="flex gap-2 items-center mt-24 relative select-none">
       <img class="w-14" draggable="false" src="@/assets/logo.svg" />
       <h1 class="font-bold text-4xl">P2P Transfer</h1>
       <h2 class="absolute -bottom-1.5 right-0 text-sm">v{{ version }}</h2>
     </header>
-    <div class="flex flex-col grow items-center">
+    <div class="flex flex-col grow items-center mt-24">
       <RouterView v-slot="{ Component }">
         <Transition name="fade">
           <component :is="Component" />
