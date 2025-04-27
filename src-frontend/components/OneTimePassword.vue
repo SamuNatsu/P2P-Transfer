@@ -89,6 +89,7 @@ onMounted(() => {
 @import "tailwindcss";
 
 input {
+  @apply font-mono;
   @apply border-b-4 h-8 outline-none text-center w-8;
   @apply transition-colors focus:border-blue-500;
 }
