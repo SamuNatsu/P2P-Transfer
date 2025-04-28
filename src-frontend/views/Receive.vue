@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 /* Icons */
 import MdiArrowBack from '~icons/mdi/arrow-back';
 import MdiConnection from '~icons/mdi/connection';
+import MdiRocketLaunchOutline from '~icons/mdi/rocket-launch-outline';
 
 /* Components */
 import AppButton from '@/components/AppButton.vue';
@@ -17,7 +18,7 @@ const route = useRoute();
 const router = useRouter();
 
 /* Stores */
-const { state, code, connect, reset, clearEffect } = useReceiver();
+const { state, code, connect, start, reset, clearEffect } = useReceiver();
 
 /* Reactive */
 const canConnect = ref(false);
@@ -82,6 +83,16 @@ onBeforeUnmount(() => clearEffect());
         <AppButton label="Back" variant="error" @click="router.push('/')">
           <template #icon>
             <MdiArrowBack class="text-2xl" />
+          </template>
+        </AppButton>
+        <AppButton
+          v-if="state === 'wait-start'"
+          label="Start"
+          variant="success"
+          @click="start()"
+        >
+          <template #icon>
+            <MdiRocketLaunchOutline class="text-2xl" />
           </template>
         </AppButton>
       </div>

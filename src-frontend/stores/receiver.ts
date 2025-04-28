@@ -101,9 +101,7 @@ export const useReceiver = createGlobalState(() => {
     state.value = 'conn-sig';
 
     receiver = new Receiver();
-    receiver.on('connected', () => {
-      receiver?.find(code.value);
-    });
+    receiver.on('connected', () => receiver?.find(code.value));
     receiver.on(
       'file',
       (name: string, mime: string, size: number, avail: boolean) => {
@@ -136,7 +134,8 @@ export const useReceiver = createGlobalState(() => {
     });
   };
   const start = async () => {
-    state.value = 'conn-sig';
+    state.value = 'negotiate';
+    receiver?.start();
   };
 
   // Returns
