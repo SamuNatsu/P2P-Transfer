@@ -21,6 +21,7 @@ export default defineConfig({
     },
   },
   source: {
+    assetsInclude: /\.txt$/,
     entry: { index: './src-frontend' },
   },
   tools: {
