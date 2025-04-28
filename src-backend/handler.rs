@@ -156,15 +156,29 @@ pub fn receiver(s: SocketRef) {
     info!(id = s.id.as_str(), "receiver: connected");
 
     // Shared session
+    let active = Arc::new(Mutex::new(false));
     let session = Arc::new(Mutex::new(None));
 
     // Find session
+    let active_1 = Arc::clone(&active);
     let session_1 = Arc::clone(&session);
     s.on(
         "find",
         move |s: SocketRef, Data::<String>(data), ack: AckSender| {
             let tmp_s = s.clone();
             let wrapper = move || -> Result<()> {
+                // Is active
+                if *active_1.lock().unwrap() {
+                    ack.send(&Value::Null)?;
+                    s.emit("error", "active")?;
+                    warn!(
+                        id = s.id.as_str(),
+                        code = data,
+                        "receiver: find: session already active"
+                    );
+                    return Ok(());
+                }
+
                 // Is session found
                 let tmp = Session::find(&data);
                 if tmp.is_none() {
@@ -225,10 +239,21 @@ pub fn receiver(s: SocketRef) {
     );
 
     // Connect session
+    let active_2 = Arc::clone(&active);
     let session_2 = Arc::clone(&session);
     s.on("connect", move |s: SocketRef| {
         let tmp_s = s.clone();
         let wrapper = move || -> Result<()> {
+            // Is active
+            if *active_2.lock().unwrap() {
+                s.emit("error", "active")?;
+                warn!(
+                    id = s.id.as_str(),
+                    "receiver: connect: session already active"
+                );
+                return Ok(());
+            }
+
             // Is session has candidate
             let session = session_2.lock().unwrap();
             if session.is_none() {
@@ -257,7 +282,8 @@ pub fn receiver(s: SocketRef) {
                 return Ok(());
             }
 
-            // Update session receiver
+            // Update session
+            *active_2.lock().unwrap() = true;
             session.receiver = Some(s.clone());
 
             // Emit events
@@ -278,10 +304,18 @@ pub fn receiver(s: SocketRef) {
     });
 
     // Forward signal messages
+    let active_3 = Arc::clone(&active);
     let session_3 = Arc::clone(&session);
     s.on("forward", move |s: SocketRef, Data::<Value>(data)| {
         let tmp_s = s.clone();
         let wrapper = move || -> Result<()> {
+            // Is active
+            if !*active_3.lock().unwrap() {
+                s.emit("error", "not active")?;
+                warn!(id = s.id.as_str(), "receiver: forward: session not active");
+                return Ok(());
+            }
+
             // Is session exists
             let session = session_3.lock().unwrap();
             if session.is_none() {
@@ -321,17 +355,20 @@ pub fn receiver(s: SocketRef) {
     });
 
     // Clean session on disconnect
+    let active_4 = Arc::clone(&active);
     let session_4 = Arc::clone(&session);
     s.on_disconnect(move |s: SocketRef| {
         let tmp_s = s.clone();
         let wrapper = move || -> Result<()> {
             // Destroy session
-            let session = session_4.lock().unwrap();
-            if let Some(session) = session.as_ref() {
-                if let Some(session) = session.upgrade() {
-                    let session = session.lock().unwrap();
-                    session.sender.emit("destroyed", &Value::Null)?;
-                    session.destroy();
+            if *active_4.lock().unwrap() {
+                let session = session_4.lock().unwrap();
+                if let Some(session) = session.as_ref() {
+                    if let Some(session) = session.upgrade() {
+                        let session = session.lock().unwrap();
+                        session.sender.emit("destroyed", &Value::Null)?;
+                        session.destroy();
+                    }
                 }
             }
 

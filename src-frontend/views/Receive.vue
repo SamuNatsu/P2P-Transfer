@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useReceiver } from '@/stores/receiver';
-import { computed, ref } from 'vue';
+import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 /* Icons */
@@ -17,7 +17,7 @@ const route = useRoute();
 const router = useRouter();
 
 /* Stores */
-const { state, code, connect } = useReceiver();
+const { state, code, connect, reset, clearEffect } = useReceiver();
 
 /* Reactive */
 const canConnect = ref(false);
@@ -30,12 +30,19 @@ const hashCode = computed(() => {
   const code = route.hash.slice(1).replace(/[^0-9a-zA-Z]/g, '');
   return code.length === 6 ? code : '';
 });
+
+/* Hooks */
+onBeforeMount(() => reset());
+onBeforeUnmount(() => clearEffect());
 </script>
 
 <template>
   <div class="flex flex-col gap-4 items-center">
     <!-- Code input -->
-    <section v-if="state === 'code-inp'" class="flex flex-col gap-4 items-center">
+    <section
+      v-if="state === 'code-inp'"
+      class="flex flex-col gap-4 items-center"
+    >
       <h1 class="font-bold text-2xl">Connection Code</h1>
       <OneTimePassword
         v-if="hashCode.length === 0"

@@ -46,6 +46,9 @@ export class Receiver extends EventEmitter {
     this.ws.on('error', (reason: string) => {
       this.close();
       switch (reason) {
+        case 'active':
+          this.emit('error', Error('Session has already been active'));
+          break;
         case 'not found':
           this.emit('error', Error('Session not found'));
           break;
@@ -58,7 +61,10 @@ export class Receiver extends EventEmitter {
         case 'no available':
           this.emit('error', Error('Session not available'));
           break;
-        case 'no exists':
+        case 'not active':
+          this.emit('error', Error('Session not active'));
+          break;
+        case 'not exists':
           this.emit('error', Error('Session not exists'));
           break;
         default:

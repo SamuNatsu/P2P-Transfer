@@ -18,7 +18,7 @@
 
 # Receiver OUT
 
-[error]|not found,destroyed,no candidate,not available,not exists,*|
+[error]|active,not found,destroyed,no candidate,not available,not active,not exists,*|
 [connected]
 [message]{*}
 [destroyed]
