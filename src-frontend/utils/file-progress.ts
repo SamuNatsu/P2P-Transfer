@@ -1,8 +1,8 @@
-import EventEmitter from "eventemitter3";
+import EventEmitter from 'eventemitter3';
 
 /**
  * Events
- * 
+ *
  * [progress](number, number, number)
  */
 
@@ -26,7 +26,7 @@ export class FileProgress extends EventEmitter {
         const percent = (this.currentSize / this.totalSize) * 100;
 
         this.lastSize = this.currentSize;
-        this.emit("progress", speed, remainTime, percent);
+        this.emit('progress', speed, remainTime, percent);
       }, 500);
     }
   }

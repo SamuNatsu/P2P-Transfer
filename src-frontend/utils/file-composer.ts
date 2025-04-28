@@ -1,5 +1,5 @@
-import { cacheDb } from "@/databases/cache";
-import { FileFragmentizer } from "@/utils/file-fragmentizer";
+import { cacheDb } from '@/databases/cache';
+import { FileFragmentizer } from '@/utils/file-fragmentizer';
 
 // Export class
 export class FileComposer {
@@ -18,7 +18,7 @@ export class FileComposer {
 
   public async memoryDownload(fileName: string, fileMime: string) {
     if (this.totalSize !== this.targetSize) {
-      throw Error("file currupted");
+      throw Error('file currupted');
     }
 
     const fragments: Uint8Array[] = [];
@@ -33,7 +33,7 @@ export class FileComposer {
 
     const blob = new Blob(fragments, { type: fileMime });
     const url = URL.createObjectURL(blob);
-    const el = document.createElement("a");
+    const el = document.createElement('a');
     el.download = fileName;
     el.href = url;
     el.click();

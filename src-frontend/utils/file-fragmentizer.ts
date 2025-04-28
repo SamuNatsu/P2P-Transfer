@@ -1,4 +1,4 @@
-import EventEmitter from "eventemitter3";
+import EventEmitter from 'eventemitter3';
 
 /**
  * Events
@@ -18,29 +18,32 @@ export class FileFragmentizer extends EventEmitter {
     return { seq, data: p.slice(8) };
   }
 
-  public constructor(private file: File, private fragmentSize: number) {
+  public constructor(
+    private file: File,
+    private fragmentSize: number,
+  ) {
     super();
 
     this.reader = new FileReader();
-    this.reader.addEventListener("load", () => {
+    this.reader.addEventListener('load', () => {
       const data = this.reader.result as ArrayBuffer;
       const packet = new Uint8Array(8 + data.byteLength);
       const view = new DataView(packet.buffer);
       view.setBigUint64(0, BigInt(this.sequenceNumber++));
       packet.set(new Uint8Array(data), 8);
 
-      this.emit("load", packet);
+      this.emit('load', packet);
     });
   }
 
   public readNext() {
     if (this.offset >= this.file.size) {
-      this.emit("load", null);
+      this.emit('load', null);
       return;
     }
 
     this.reader.readAsArrayBuffer(
-      this.file.slice(this.offset, this.offset + this.fragmentSize)
+      this.file.slice(this.offset, this.offset + this.fragmentSize),
     );
     this.offset += this.fragmentSize;
   }
