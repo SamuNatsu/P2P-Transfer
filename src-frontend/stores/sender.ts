@@ -116,6 +116,7 @@ export const useSender = createGlobalState(() => {
     sender.on('error', (err: Error) => {
       state.value = 'error';
       error.value = err;
+      sender = null;
       console.error(err);
     });
   };

@@ -2,6 +2,18 @@ import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
 import EventEmitter from 'eventemitter3';
 
+/**
+ * Events
+ *
+ * [connected]
+ * [error](Error)
+ * [code](string)
+ * [negotiate]
+ * [send]
+ * [progress](number, number, number)
+ * [done]
+ */
+
 // Export class
 export class Sender extends EventEmitter {
   private ws: Socket;
@@ -65,12 +77,12 @@ export class Sender extends EventEmitter {
         }
       })
       .catch((err: Error): void => {
-        this.ws.close();
+        this.close();
         this.emit('error', err);
       });
   }
 
   public close(): void {
-    this.ws.close();
+    this.ws.disconnect();
   }
 }

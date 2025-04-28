@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSender } from '@/stores/sender';
-import { formatNumber, formatTime } from '@/utils';
+import { formatNumber, formatTime, splitInteger } from '@/utils';
 
 /* Icons */
 import MdiContentCopy from '~icons/mdi/content-copy';
@@ -24,7 +24,7 @@ const {
 /* Actions */
 const copyCode = () => {
   const url = new URL(location.href);
-  url.pathname = `${import.meta.env.BASE_URL}/receiver`.replace('//', '/');
+  url.pathname = `${import.meta.env.BASE_URL}/receive`.replace('//', '/');
   url.hash = `#${code.value}`;
 
   navigator.clipboard
@@ -62,7 +62,7 @@ const copyCode = () => {
         </tr>
         <tr>
           <th>Size</th>
-          <td :title="`${file?.size} Byte(s)`">
+          <td :title="`${splitInteger(file!.size)} Byte(s)`">
             {{ formatNumber(file!.size, "B") }}
           </td>
         </tr>

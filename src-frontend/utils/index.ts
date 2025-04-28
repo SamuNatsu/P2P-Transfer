@@ -28,6 +28,16 @@ export const formatNumber = (
   }
 };
 
+export const splitInteger = (x: number) => {
+  const [intPart, decPart] = x.toString().split('.');
+  const fInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  if (decPart) {
+    const fDec = decPart.replace(/(\d{3})/g, '$1,').replace(/,$/, '');
+    return `${fInt}.${fDec}`;
+  }
+  return fInt;
+};
+
 export const formatTime = (t: number) => {
   t = Math.trunc(t);
   if (t < 0 || t >= 36000) {
