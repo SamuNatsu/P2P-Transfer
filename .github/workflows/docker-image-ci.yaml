@@ -17,6 +17,12 @@ env:
   REGISTRY: ghcr.io
   REGISTRY_IMAGE: ghcr.io/samunatsu/p2p-transfer
 
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
 jobs:
   build:
     strategy:
@@ -28,11 +34,6 @@ jobs:
           - host: ubuntu-24.04-arm
             target: linux/arm64
     runs-on: ${{ matrix.platform.host }}
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
     steps:
       - name: Prepare
         run: |
