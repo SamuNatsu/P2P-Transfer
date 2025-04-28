@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "update:stun": "scripts/fetch-stun.sh",
     "build": "rsbuild build",
     "check": "biome check --write --verbose",
     "dev": "rsbuild dev --open",
