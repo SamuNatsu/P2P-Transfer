@@ -1,4 +1,5 @@
 import type { Socket } from 'socket.io-client';
+import { PoolListener } from '@/utils/pool-listener';
 import { io } from 'socket.io-client';
 import EventEmitter from 'eventemitter3';
 
@@ -17,26 +18,30 @@ import EventEmitter from 'eventemitter3';
 // Export class
 export class Sender extends EventEmitter {
   private ws: Socket;
+  private pool: PoolListener;
 
   public constructor(private file: File) {
     super();
 
     this.ws = io('/sender', { reconnection: false });
+    this.pool = new PoolListener();
 
-    this.ws.on('connect', () => {
-      this.emit('connected');
-    });
+    this.ws.on('connect', () => this.emit('connected'));
     this.ws.on('connect_error', (err: Error) => {
       this.close();
       this.emit('error', err);
     });
 
-    this.ws.on('connected', () => {
-      this.emit('negotiate');
-      // TODO
-    });
-    this.ws.on('message', () => {
-      // TODO
+    this.ws.on('ready', () => this.emit('negotiate'));
+    this.ws.on('message', (data) => {
+      switch (data.type) {
+        case 'candidate':
+          this.pool.addCandidate(data.idx, data.candidate);
+          break;
+        case 'offer':
+          this.pool.createAnswer(data.idx, data.offer);
+          break;
+      }
     });
 
     this.ws.on('destroyed', () => {
@@ -62,6 +67,38 @@ export class Sender extends EventEmitter {
           this.emit('error', Error('Internal server error'));
       }
     });
+
+    this.pool.on('new candidate', (idx: number, candidate: RTCIceCandidate) => {
+      this.ws.emit('forward', {
+        type: 'candidate',
+        candidate: candidate.toJSON(),
+        idx,
+      });
+    });
+    this.pool.on('answer', (idx: number, desc: RTCSessionDescription) => {
+      this.ws.emit('forward', {
+        type: 'answer',
+        answer: desc.toJSON(),
+        idx,
+      });
+    });
+    this.pool.on('connected', () => {
+      this.emit('send');
+      // TODO
+    });
+    this.pool.on('message', () => {
+      // TODO
+    });
+    this.pool.on('sendable', () => {
+      // TODO
+    });
+    this.pool.on('busy', () => {
+      // TODO
+    });
+    this.pool.on('error', (err: Error) => {
+      this.close();
+      this.emit('error', err);
+    });
   }
 
   public start(): void {
@@ -84,5 +121,6 @@ export class Sender extends EventEmitter {
 
   public close(): void {
     this.ws.disconnect();
+    this.pool.close();
   }
 }
