@@ -6,19 +6,19 @@
 # Sender OUT
 
 [error]|existed,not exists,destroyed,no receiver,*|
-[connected]
+[ready]
 [message]{*}
 [destroyed]
 
 # Receiver IN
 
 [find]code -> ?{file_name, file_mime, file_size, available}
-[connect]
+[start]
 [forward]{*}
 
 # Receiver OUT
 
 [error]|active,not found,destroyed,no candidate,not available,not active,not exists,*|
-[connected]
+[ready]
 [message]{*}
 [destroyed]

@@ -238,10 +238,10 @@ pub fn receiver(s: SocketRef) {
         },
     );
 
-    // Connect session
+    // Start
     let active_2 = Arc::clone(&active);
     let session_2 = Arc::clone(&session);
-    s.on("connect", move |s: SocketRef| {
+    s.on("start", move |s: SocketRef| {
         let tmp_s = s.clone();
         let wrapper = move || -> Result<()> {
             // Is active
@@ -249,7 +249,7 @@ pub fn receiver(s: SocketRef) {
                 s.emit("error", "active")?;
                 warn!(
                     id = s.id.as_str(),
-                    "receiver: connect: session already active"
+                    "receiver: start: session already active"
                 );
                 return Ok(());
             }
@@ -258,7 +258,7 @@ pub fn receiver(s: SocketRef) {
             let session = session_2.lock().unwrap();
             if session.is_none() {
                 s.emit("error", "no candidate")?;
-                warn!(id = s.id.as_str(), "receiver: connect: no candidate found");
+                warn!(id = s.id.as_str(), "receiver: start: no candidate found");
                 return Ok(());
             }
 
@@ -266,7 +266,7 @@ pub fn receiver(s: SocketRef) {
             let session = session.as_ref().unwrap().upgrade();
             if session.is_none() {
                 s.emit("error", "destroyed")?;
-                warn!(id = s.id.as_str(), "receiver: connect: session destroyed");
+                warn!(id = s.id.as_str(), "receiver: start: session destroyed");
                 return Ok(());
             }
 
@@ -277,7 +277,7 @@ pub fn receiver(s: SocketRef) {
                 s.emit("error", "not available")?;
                 warn!(
                     id = s.id.as_str(),
-                    "receiver: connect: session not available"
+                    "receiver: start: session not available"
                 );
                 return Ok(());
             }
@@ -287,11 +287,11 @@ pub fn receiver(s: SocketRef) {
             session.receiver = Some(s.clone());
 
             // Emit events
-            s.emit("connected", &Value::Null)?;
-            session.sender.emit("connected", &Value::Null)?;
+            s.emit("ready", &Value::Null)?;
+            session.sender.emit("ready", &Value::Null)?;
 
             // Print log
-            info!(id = s.id.as_str(), "receiver: connect: ok");
+            info!(id = s.id.as_str(), "receiver: start: ok");
 
             // Success
             Ok(())
