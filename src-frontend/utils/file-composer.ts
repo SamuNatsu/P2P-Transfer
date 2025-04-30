@@ -14,6 +14,7 @@ export class FileComposer {
     cacheDb.fragments.add({ seq, data });
 
     this.totalSize += data.byteLength;
+    return data.byteLength;
   }
 
   public async memoryDownload(fileName: string, fileMime: string) {

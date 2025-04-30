@@ -43,7 +43,6 @@ export class FileFragmentizer extends EventEmitter {
     }
 
     if (this.reader.readyState === this.reader.LOADING) {
-      setTimeout(() => this.readNext());
       return;
     }
 
