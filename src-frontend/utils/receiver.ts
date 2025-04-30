@@ -159,6 +159,10 @@ export class Receiver extends EventEmitter {
     this.ws.emit('start');
   }
 
+  public async download(fileName: string, fileType: string) {
+    await this.fileComp.memoryDownload(fileName, fileType);
+  }
+
   public close() {
     this.isDone = true;
     this.ws.close();

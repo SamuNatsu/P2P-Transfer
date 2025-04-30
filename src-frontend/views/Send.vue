@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router';
 /* Icons */
 import MdiArrowBack from '~icons/mdi/arrow-back';
 import MdiRocketLaunchOutline from '~icons/mdi/rocket-launch-outline';
+import MdiStopRemoveOutline from '~icons/mdi/stop-remove-outline';
 
 /* Components */
 import AppButton from '@/components/AppButton.vue';
@@ -16,7 +17,7 @@ import SenderPanel from '@/components/SenderPanel.vue';
 const router = useRouter();
 
 /* Stores */
-const { state, file, reset, clearEffect, start } = useSender();
+const { state, file, reset, clearEffect, start, abort } = useSender();
 
 /* Hooks */
 onBeforeMount(() => reset());
@@ -54,9 +55,19 @@ onBeforeUnmount(() => clearEffect());
     <section v-else class="flex flex-col gap-4 items-center">
       <SenderPanel />
       <div class="flex gap-4 mt-8">
-        <AppButton label="Back" variant="error" @click="router.push('/')">
+        <AppButton
+          v-if="['done', 'error'].includes(state)"
+          label="Back"
+          variant="error"
+          @click="router.push('/')"
+        >
           <template #icon>
             <MdiArrowBack class="text-2xl" />
+          </template>
+        </AppButton>
+        <AppButton v-else label="Abort" variant="error" @click="abort">
+          <template #icon>
+            <MdiStopRemoveOutline class="text-2xl" />
           </template>
         </AppButton>
       </div>

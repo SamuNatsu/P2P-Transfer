@@ -6,7 +6,9 @@ import { useRoute, useRouter } from 'vue-router';
 /* Icons */
 import MdiArrowBack from '~icons/mdi/arrow-back';
 import MdiConnection from '~icons/mdi/connection';
+import MdiContentSave from '~icons/mdi/content-save';
 import MdiRocketLaunchOutline from '~icons/mdi/rocket-launch-outline';
+import MdiStopRemoveOutline from '~icons/mdi/stop-remove-outline';
 
 /* Components */
 import AppButton from '@/components/AppButton.vue';
@@ -18,7 +20,8 @@ const route = useRoute();
 const router = useRouter();
 
 /* Stores */
-const { state, code, connect, start, reset, clearEffect } = useReceiver();
+const { state, code, saving, connect, start, reset, clearEffect, abort, save } =
+  useReceiver();
 
 /* Reactive */
 const canConnect = ref(false);
@@ -80,11 +83,22 @@ onBeforeUnmount(() => clearEffect());
     <section v-else class="flex flex-col gap-4 items-center">
       <ReceiverPanel />
       <div class="flex gap-4 mt-8">
-        <AppButton label="Back" variant="error" @click="router.push('/')">
+        <AppButton
+          v-if="['done', 'error'].includes(state)"
+          label="Back"
+          variant="error"
+          @click="router.push('/')"
+        >
           <template #icon>
             <MdiArrowBack class="text-2xl" />
           </template>
         </AppButton>
+        <AppButton v-else label="Abort" variant="error" @click="abort">
+          <template #icon>
+            <MdiStopRemoveOutline class="text-2xl" />
+          </template>
+        </AppButton>
+
         <AppButton
           v-if="state === 'wait-start'"
           label="Start"
@@ -93,6 +107,18 @@ onBeforeUnmount(() => clearEffect());
         >
           <template #icon>
             <MdiRocketLaunchOutline class="text-2xl" />
+          </template>
+        </AppButton>
+
+        <AppButton
+          v-if="state === 'done'"
+          variant="success"
+          :label="saving ? 'Saving' : 'Save'"
+          :disabled="saving"
+          @click="save()"
+        >
+          <template #icon>
+            <MdiContentSave class="text-2xl" />
           </template>
         </AppButton>
       </div>

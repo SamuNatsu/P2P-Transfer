@@ -79,6 +79,8 @@ export const useSender = createGlobalState(() => {
     progress.value = 0;
     remainingTime.value = 0;
     speed.value = 0;
+
+    sender?.close();
     sender = null;
 
     window.addEventListener('beforeunload', onBeforeUnload);
@@ -115,11 +117,18 @@ export const useSender = createGlobalState(() => {
       sender?.close();
     });
     sender.on('error', (err: Error) => {
+      console.error(err);
       state.value = 'error';
       error.value = err;
+      sender?.close();
       sender = null;
-      console.error(err);
     });
+  };
+  const abort = () => {
+    state.value = 'error';
+    error.value = Error('abort');
+    sender?.close();
+    sender = null;
   };
 
   // Returns
@@ -138,5 +147,6 @@ export const useSender = createGlobalState(() => {
     reset,
     clearEffect,
     start,
+    abort,
   };
 });

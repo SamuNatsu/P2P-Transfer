@@ -26,6 +26,7 @@ export const useReceiver = createGlobalState(() => {
   const progress = ref<number>(0);
   const remainingTime = ref<number>(0);
   const speed = ref<number>(0);
+  const saving = ref(false);
 
   let receiver = null as Receiver | null;
 
@@ -85,7 +86,9 @@ export const useReceiver = createGlobalState(() => {
     progress.value = 0;
     remainingTime.value = 0;
     speed.value = 0;
+    saving.value = false;
 
+    receiver?.close();
     receiver = null;
 
     window.addEventListener('beforeunload', onBeforeUnload);
@@ -124,15 +127,32 @@ export const useReceiver = createGlobalState(() => {
       receiver?.close();
     });
     receiver.on('error', (err: Error) => {
+      console.error(err);
       state.value = 'error';
       error.value = err;
+      receiver?.close();
       receiver = null;
-      console.error(err);
     });
   };
   const start = async () => {
     state.value = 'negotiate';
     receiver?.start();
+  };
+  const abort = () => {
+    state.value = 'error';
+    error.value = Error('abort');
+    receiver?.close();
+    receiver = null;
+  };
+  const save = async () => {
+    saving.value = true;
+    await receiver?.download(
+      fileName.value!,
+      fileMime.value === 'unknown'
+        ? 'application/octet-stream'
+        : fileMime.value!,
+    );
+    saving.value = false;
   };
 
   // Returns
@@ -147,6 +167,7 @@ export const useReceiver = createGlobalState(() => {
     progress,
     remainingTime,
     speed,
+    saving,
 
     stateStr,
     stateCls,
@@ -155,5 +176,7 @@ export const useReceiver = createGlobalState(() => {
     clearEffect,
     connect,
     start,
+    abort,
+    save,
   };
 });
