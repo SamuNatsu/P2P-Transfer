@@ -54,10 +54,18 @@ export class FileProgress extends EventEmitter {
   }
 
   public add(size: number) {
+    if (this.handle === null) {
+      this.start();
+    }
+
     this.currentSize += size;
   }
 
   public set(size: number) {
+    if (this.handle === null) {
+      this.start();
+    }
+
     if (size > this.currentSize) {
       this.currentSize = size;
     }
