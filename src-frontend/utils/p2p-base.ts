@@ -28,6 +28,7 @@ export class P2PBase extends EventEmitter {
   protected ch: RTCDataChannel[] = [];
 
   private queue: Uint8Array[] = [];
+  private scores: Map<RTCDataChannel, number> = new Map();
   private isStartQueuing: boolean = false;
   private lastSentTime: number = 0;
   private avgRate: number = 0;
@@ -60,20 +61,25 @@ export class P2PBase extends EventEmitter {
   }
 
   private getIdleChannel(size: number) {
-    return this.ch.reduce(
-      (best, cur) => {
-        if (cur.bufferedAmount + size >= P2PBase.MAX_BUF_SIZE) {
-          return best;
-        }
-
-        if (best === null || cur.bufferedAmount < best.bufferedAmount) {
-          return cur;
-        }
-
-        return best;
-      },
-      null as RTCDataChannel | null,
+    const decayFactor = 0.95;
+    const candidates = this.ch.filter(
+      (ch) => ch.bufferedAmount + size < P2PBase.MAX_BUF_SIZE,
     );
+
+    if (candidates.length === 0) {
+      return null;
+    }
+
+    for (const [ch, score] of this.scores.entries()) {
+      this.scores.set(ch, score * decayFactor);
+    }
+
+    return candidates.reduce((best, current) => {
+      const bestScore = this.scores.get(best) ?? 0;
+      const currentScore = this.scores.get(current) ?? 0;
+
+      return currentScore < bestScore ? current : best;
+    }, candidates[0]);
   }
 
   private getThrottleDelay(size: number) {
@@ -82,7 +88,7 @@ export class P2PBase extends EventEmitter {
     this.avgRate = this.avgRate * 0.9 + (size / elapsed) * 0.1;
     this.lastSentTime = now;
 
-    const factor = Math.max(0, this.avgRate / 2_097_152); // 2MB/s
+    const factor = Math.max(0, this.avgRate / 8_388_608); // 8MB/s
     return Math.min(1000, P2PBase.BASE_THROTTLE_DELAY * factor);
   }
 
@@ -105,6 +111,7 @@ export class P2PBase extends EventEmitter {
       try {
         ch.send(d);
         this.queue.shift();
+        this.scores.set(ch, (this.scores.get(ch) || 0) + 1);
         this.emit('sendable');
       } catch (err: unknown) {
         console.error(err);
@@ -165,5 +172,8 @@ export class P2PBase extends EventEmitter {
       i.close();
     }
     this.pc.close();
+    this.ch = [];
+    this.queue = [];
+    this.scores.clear();
   }
 }
