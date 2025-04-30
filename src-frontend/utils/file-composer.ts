@@ -5,7 +5,7 @@ import { FileFragmentizer } from '@/utils/file-fragmentizer';
 export class FileComposer {
   private totalSize: number = 0;
 
-  public constructor(private targetSize: number) {
+  public constructor(public targetSize: number) {
     cacheDb.delete({ disableAutoOpen: false });
   }
 

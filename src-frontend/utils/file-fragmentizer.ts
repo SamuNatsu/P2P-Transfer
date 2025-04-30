@@ -42,6 +42,11 @@ export class FileFragmentizer extends EventEmitter {
       return;
     }
 
+    if (this.reader.readyState === this.reader.LOADING) {
+      setTimeout(() => this.readNext());
+      return;
+    }
+
     this.reader.readAsArrayBuffer(
       this.file.slice(this.offset, this.offset + this.fragmentSize),
     );
