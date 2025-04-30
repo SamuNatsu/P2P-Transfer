@@ -17,61 +17,106 @@ import pako from 'pako';
 export class P2PBase extends EventEmitter {
   // Constants
   protected static readonly MAX_CH_NUM: number = 4;
-  protected static readonly MAX_BUF_SIZE: number = 4194304; // 4MB
-  protected static readonly ICE_SERVERS: RTCIceServer[] = rawStunList
+  private static readonly MAX_BUF_SIZE: number = 4_194_304; // 4MB
+  private static readonly BASE_THROTTLE_DELAY: number = 100;
+  private static readonly ICE_SERVERS: RTCIceServer[] = rawStunList
     .trim()
     .split('\n')
     .map((ip) => ({ urls: `stun:${ip}` }));
 
   protected pc: RTCPeerConnection;
   protected ch: RTCDataChannel[] = [];
-  protected numErrCh: number = 0;
+
+  private queue: Uint8Array[] = [];
+  private isStartQueuing: boolean = false;
+  private lastSentTime: number = 0;
+  private avgRate: number = 0;
 
   protected attachListenersForChannel(ch: RTCDataChannel) {
     ch.addEventListener('open', () => {
       this.ch.push(ch);
-      if (this.ch.length === 0) {
-        this.emit('sendable');
+      if (!this.isStartQueuing) {
+        this.scheduleSend();
       }
+
+      this.emit('sendable');
     });
 
     ch.addEventListener('message', (ev) => {
-      this.emit('message', pako.inflate(ev.data));
+      try {
+        this.emit('message', pako.inflate(ev.data));
+      } catch (err: unknown) {
+        console.error(err);
+        this.close();
+        this.emit('error', err);
+      }
     });
 
     ch.addEventListener('error', (ev) => {
       console.error(ev.error);
-      ch.close();
-      this.numErrCh++;
-      if (this.numErrCh === P2PBase.MAX_CH_NUM) {
-        this.close();
-        this.emit('error', Error('P2P channel closed'));
-      }
+      this.close();
+      this.emit('error', Error('P2P channel closed'));
     });
   }
 
-  protected scheduleSend(d: Uint8Array) {
-    let ch = null as RTCDataChannel | null;
-    let mn = Number.MAX_SAFE_INTEGER;
+  private getIdleChannel(size: number) {
+    return this.ch.reduce(
+      (best, cur) => {
+        if (cur.bufferedAmount + size >= P2PBase.MAX_BUF_SIZE) {
+          return best;
+        }
 
-    for (const i of this.ch) {
-      if (
-        i.bufferedAmount + d.byteLength < P2PBase.MAX_BUF_SIZE &&
-        i.bufferedAmount < mn
-      ) {
-        ch = i;
-        mn = i.bufferedAmount;
+        if (best === null || cur.bufferedAmount < best.bufferedAmount) {
+          return cur;
+        }
+
+        return best;
+      },
+      null as RTCDataChannel | null,
+    );
+  }
+
+  private getThrottleDelay(size: number) {
+    const now = Date.now();
+    const elapsed = now - this.lastSentTime || 1;
+    this.avgRate = this.avgRate * 0.9 + (size / elapsed) * 0.1;
+    this.lastSentTime = now;
+
+    const factor = Math.max(0, this.avgRate / 2_097_152); // 2MB/s
+    return Math.min(1000, P2PBase.BASE_THROTTLE_DELAY * factor);
+  }
+
+  private async scheduleSend() {
+    if (this.isStartQueuing) {
+      return;
+    }
+    this.isStartQueuing = true;
+
+    while (this.queue.length > 0 && this.ch.length > 0) {
+      const d = this.queue[0];
+      const ch = this.getIdleChannel(d.byteLength);
+
+      if (ch === null) {
+        this.emit('busy');
+        await new Promise((r) => setTimeout(r, P2PBase.BASE_THROTTLE_DELAY));
+        continue;
+      }
+
+      try {
+        ch.send(d);
+        this.queue.shift();
+        this.emit('sendable');
+      } catch (err: unknown) {
+        console.error(err);
+      }
+
+      const delay = this.getThrottleDelay(d.byteLength);
+      if (delay > 0) {
+        await new Promise((r) => setTimeout(r, delay));
       }
     }
 
-    if (ch !== null) {
-      ch.send(d);
-      this.emit('sendable');
-      return;
-    }
-
-    this.emit('busy');
-    setTimeout(() => this.scheduleSend(d));
+    this.isStartQueuing = false;
   }
 
   public constructor() {
@@ -109,7 +154,10 @@ export class P2PBase extends EventEmitter {
   }
 
   public send(d: Uint8Array) {
-    this.scheduleSend(pako.deflate(d));
+    this.queue.push(pako.deflate(d));
+    if (!this.isStartQueuing) {
+      this.scheduleSend();
+    }
   }
 
   public close() {
