@@ -1,4 +1,6 @@
 import type { Socket } from 'socket.io-client';
+import { FileComposer } from '@/utils/file-composer';
+import { FileProgress } from '@/utils/file-progress';
 import { PoolConnector } from '@/utils/pool-connector';
 import { io } from 'socket.io-client';
 import EventEmitter from 'eventemitter3';
@@ -19,13 +21,10 @@ import EventEmitter from 'eventemitter3';
 export class Receiver extends EventEmitter {
   private ws: Socket;
   private pool: PoolConnector;
+  private fileComp: FileComposer;
+  private fileProg: FileProgress;
 
-  public constructor() {
-    super();
-
-    this.ws = io('/receiver', { reconnection: false });
-    this.pool = new PoolConnector();
-
+  private attachListenersForSocket() {
     this.ws.on('connect', () => this.emit('connected'));
     this.ws.on('connect_error', (err: Error) => {
       this.close();
@@ -79,7 +78,9 @@ export class Receiver extends EventEmitter {
           this.emit('error', Error('Internal server error'));
       }
     });
+  }
 
+  private attachListenersForPool() {
     this.pool.on('new candidate', (idx: number, candidate: RTCIceCandidate) => {
       this.ws.emit('forward', {
         type: 'candidate',
@@ -96,21 +97,39 @@ export class Receiver extends EventEmitter {
     });
     this.pool.on('connected', () => {
       this.emit('recv');
-      // TODO
+      this.fileProg.start();
     });
-    this.pool.on('message', () => {
-      // TODO
-    });
-    this.pool.on('sendable', () => {
-      // TODO
-    });
-    this.pool.on('busy', () => {
-      // TODO
+    this.pool.on('message', (d: Uint8Array) => {
+      this.fileComp.addPacket(d);
+      this.fileProg.add(d.byteLength);
     });
     this.pool.on('error', (err: Error) => {
       this.close();
       this.emit('error', err);
     });
+  }
+
+  public constructor() {
+    super();
+
+    this.ws = io('/receiver', { reconnection: false });
+    this.pool = new PoolConnector();
+    this.fileComp = new FileComposer(0);
+    this.fileProg = new FileProgress(0);
+
+    this.attachListenersForSocket();
+    this.attachListenersForPool();
+    this.fileProg.on(
+      'progress',
+      (spd: number, rt: number, pct: number, tot: number) => {
+        const arr = new Uint8Array(8);
+        const view = new DataView(arr.buffer);
+        view.setBigUint64(0, BigInt(tot));
+
+        this.pool.send(arr);
+        this.emit('progress', spd, rt, pct);
+      },
+    );
   }
 
   public find(code: string): void {
@@ -122,6 +141,8 @@ export class Receiver extends EventEmitter {
             string,
             any
           >;
+          this.fileComp.targetSize = file_size;
+          this.fileProg.totalSize = file_size;
           this.emit('file', file_name, file_mime, file_size, available);
         }
       })

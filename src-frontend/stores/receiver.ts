@@ -112,13 +112,9 @@ export const useReceiver = createGlobalState(() => {
         available.value = avail;
       },
     );
-    receiver.on('negotiate', () => {
-      state.value = 'negotiate';
-    });
-    receiver.on('recv', () => {
-      state.value = 'recv';
-    });
-    receiver.on('progress', (pct: number, rt: number, spd: number) => {
+    receiver.on('negotiate', () => (state.value = 'negotiate'));
+    receiver.on('recv', () => (state.value = 'recv'));
+    receiver.on('progress', (spd: number, rt: number, pct: number) => {
       progress.value = pct;
       remainingTime.value = rt;
       speed.value = spd;

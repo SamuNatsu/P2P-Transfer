@@ -105,7 +105,7 @@ export const useSender = createGlobalState(() => {
     sender.on('send', () => {
       state.value = 'send';
     });
-    sender.on('progress', (pct: number, rt: number, spd: number) => {
+    sender.on('progress', (spd: number, rt: number, pct: number) => {
       progress.value = pct;
       remainingTime.value = rt;
       speed.value = spd;

@@ -1,4 +1,6 @@
 import type { Socket } from 'socket.io-client';
+import { FileFragmentizer } from '@/utils/file-fragmentizer';
+import { FileProgress } from '@/utils/file-progress';
 import { PoolListener } from '@/utils/pool-listener';
 import { io } from 'socket.io-client';
 import EventEmitter from 'eventemitter3';
@@ -17,15 +19,15 @@ import EventEmitter from 'eventemitter3';
 
 // Export class
 export class Sender extends EventEmitter {
+  private static readonly FRAG_SIZE: number = 15360; // 15KB
+
   private ws: Socket;
   private pool: PoolListener;
+  private fileFrag: FileFragmentizer;
+  private fileProg: FileProgress;
+  private sendable: boolean = false;
 
-  public constructor(private file: File) {
-    super();
-
-    this.ws = io('/sender', { reconnection: false });
-    this.pool = new PoolListener();
-
+  private attachListenersForSocket() {
     this.ws.on('connect', () => this.emit('connected'));
     this.ws.on('connect_error', (err: Error) => {
       this.close();
@@ -67,7 +69,9 @@ export class Sender extends EventEmitter {
           this.emit('error', Error('Internal server error'));
       }
     });
+  }
 
+  private attachListenersForPool() {
     this.pool.on('new candidate', (idx: number, candidate: RTCIceCandidate) => {
       this.ws.emit('forward', {
         type: 'candidate',
@@ -84,20 +88,46 @@ export class Sender extends EventEmitter {
     });
     this.pool.on('connected', () => {
       this.emit('send');
-      // TODO
+      this.fileProg.start();
     });
-    this.pool.on('message', () => {
-      // TODO
+    this.pool.on('message', (d: Uint8Array) => {
+      const view = new DataView(d.buffer);
+      const size = view.getBigUint64(0);
+      this.fileProg.set(Number(size));
     });
     this.pool.on('sendable', () => {
-      // TODO
+      this.sendable = true;
+      this.fileFrag.readNext();
     });
     this.pool.on('busy', () => {
-      // TODO
+      this.sendable = false;
     });
     this.pool.on('error', (err: Error) => {
       this.close();
       this.emit('error', err);
+    });
+  }
+
+  public constructor(private file: File) {
+    super();
+
+    this.ws = io('/sender', { reconnection: false });
+    this.pool = new PoolListener();
+    this.fileFrag = new FileFragmentizer(file, Sender.FRAG_SIZE);
+    this.fileProg = new FileProgress(file.size);
+
+    this.attachListenersForSocket();
+    this.attachListenersForPool();
+    this.fileFrag.on('load', (data: Uint8Array | null) => {
+      if (data !== null) {
+        this.pool.send(data);
+        if (this.sendable) {
+          this.fileFrag.readNext();
+        }
+      }
+    });
+    this.fileProg.on('progress', (spd: number, rt: number, pct: number) => {
+      this.emit('progress', spd, rt, pct);
     });
   }
 
