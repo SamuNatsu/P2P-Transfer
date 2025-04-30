@@ -16,7 +16,7 @@ export const formatNumber = (
   power: number = 1000,
 ) => {
   if (x < power) {
-    return `${x}${unit}`;
+    return `${x.toFixed(1)}${unit}`;
   } else if (x < Math.pow(power, 2)) {
     return `${(x / power).toFixed(1)}K${unit}`;
   } else if (x < Math.pow(power, 3)) {
