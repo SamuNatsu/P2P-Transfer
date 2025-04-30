@@ -14,11 +14,7 @@ import { PoolBase } from '@/utils/pool-base';
  */
 
 // Export class
-export class PoolConnector extends PoolBase {
-  private conn: P2PConnector[] = [];
-  private sendable: boolean[] = [];
-  private numConnected: number = 0;
-
+export class PoolConnector extends PoolBase<P2PConnector> {
   private attachListeners(idx: number, l: P2PConnector) {
     l.on('new candidate', (candidate: RTCIceCandidate) => {
       this.emit('new candidate', idx, candidate);
@@ -30,7 +26,7 @@ export class PoolConnector extends PoolBase {
 
     l.on('connected', () => {
       this.numConnected++;
-      if (this.numConnected === PoolBase.MAX_CONNECTION) {
+      if (this.numConnected === PoolConnector.MAX_CONNECTION) {
         this.emit('connected');
       }
     });
@@ -68,10 +64,6 @@ export class PoolConnector extends PoolBase {
     }
   }
 
-  public addCandidate(idx: number, candidate: RTCIceCandidateInit) {
-    this.conn[idx].addCandidate(candidate);
-  }
-
   public prepareOffers() {
     for (const i of this.conn) {
       i.createOffer();
@@ -80,22 +72,5 @@ export class PoolConnector extends PoolBase {
 
   public setAnswer(idx: number, desc: RTCSessionDescriptionInit) {
     this.conn[idx].setAnswer(desc);
-  }
-
-  public send(d: Uint8Array) {
-    const idle = this.conn.filter((_, idx) => this.sendable[idx]);
-    if (idle.length > 0) {
-      const idx = Math.trunc(Math.random() * idle.length);
-      idle[idx].send(d);
-      return;
-    }
-
-    setTimeout(() => this.send(d));
-  }
-
-  public close() {
-    for (const i of this.conn) {
-      i.close();
-    }
   }
 }

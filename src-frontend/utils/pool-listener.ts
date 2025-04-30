@@ -14,11 +14,7 @@ import { PoolBase } from '@/utils/pool-base';
  */
 
 // Export class
-export class PoolListener extends PoolBase {
-  private conn: P2PListener[] = [];
-  private sendable: boolean[] = [];
-  private numConnected: number = 0;
-
+export class PoolListener extends PoolBase<P2PListener> {
   private attachListeners(idx: number, l: P2PListener) {
     l.on('new candidate', (candidate: RTCIceCandidate) => {
       this.emit('new candidate', idx, candidate);
@@ -30,7 +26,7 @@ export class PoolListener extends PoolBase {
 
     l.on('connected', () => {
       this.numConnected++;
-      if (this.numConnected === PoolBase.MAX_CONNECTION) {
+      if (this.numConnected === PoolListener.MAX_CONNECTION) {
         this.emit('connected');
       }
     });
@@ -68,28 +64,7 @@ export class PoolListener extends PoolBase {
     }
   }
 
-  public addCandidate(idx: number, candidate: RTCIceCandidateInit) {
-    this.conn[idx].addCandidate(candidate);
-  }
-
   public createAnswer(idx: number, desc: RTCSessionDescriptionInit) {
     this.conn[idx].createAnswer(desc);
-  }
-
-  public send(d: Uint8Array) {
-    const idle = this.conn.filter((_, idx) => this.sendable[idx]);
-    if (idle.length > 0) {
-      const idx = Math.trunc(Math.random() * idle.length);
-      idle[idx].send(d);
-      return;
-    }
-
-    setTimeout(() => this.send(d));
-  }
-
-  public close() {
-    for (const i of this.conn) {
-      i.close();
-    }
   }
 }
