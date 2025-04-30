@@ -112,6 +112,7 @@ export const useSender = createGlobalState(() => {
     });
     sender.on('done', () => {
       state.value = 'done';
+      sender?.close();
     });
     sender.on('error', (err: Error) => {
       state.value = 'error';

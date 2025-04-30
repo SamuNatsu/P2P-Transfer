@@ -23,13 +23,19 @@ export class Receiver extends EventEmitter {
   private pool: PoolConnector;
   private fileComp: FileComposer;
   private fileProg: FileProgress;
+  private isDone: boolean = false;
+
+  private throwError(err: Error) {
+    console.error(err);
+    if (!this.isDone) {
+      this.close();
+      this.emit('error', err);
+    }
+  }
 
   private attachListenersForSocket() {
     this.ws.on('connect', () => this.emit('connected'));
-    this.ws.on('connect_error', (err: Error) => {
-      this.close();
-      this.emit('error', err);
-    });
+    this.ws.on('connect_error', (err: Error) => this.throwError(err));
 
     this.ws.on('ready', () => {
       this.emit('negotiate');
@@ -46,36 +52,33 @@ export class Receiver extends EventEmitter {
       }
     });
 
-    this.ws.on('destroyed', () => {
-      this.close();
-      this.emit('error', Error('Session destroyed'));
-    });
+    this.ws.on('destroyed', () => this.throwError(Error('Session destroyed')));
     this.ws.on('error', (reason: string) => {
       this.close();
       switch (reason) {
         case 'active':
-          this.emit('error', Error('Session has already been active'));
+          this.throwError(Error('Session has already been active'));
           break;
         case 'not found':
-          this.emit('error', Error('Session not found'));
+          this.throwError(Error('Session not found'));
           break;
         case 'destroyed':
-          this.emit('error', Error('Session destroyed'));
+          this.throwError(Error('Session destroyed'));
           break;
         case 'no candidate':
-          this.emit('error', Error('No candidate for connecting'));
+          this.throwError(Error('No candidate for connecting'));
           break;
         case 'no available':
-          this.emit('error', Error('Session not available'));
+          this.throwError(Error('Session not available'));
           break;
         case 'not active':
-          this.emit('error', Error('Session not active'));
+          this.throwError(Error('Session not active'));
           break;
         case 'not exists':
-          this.emit('error', Error('Session not exists'));
+          this.throwError(Error('Session not exists'));
           break;
         default:
-          this.emit('error', Error('Internal server error'));
+          this.throwError(Error('Internal server error'));
       }
     });
   }
@@ -100,13 +103,10 @@ export class Receiver extends EventEmitter {
       this.fileProg.start();
     });
     this.pool.on('message', (d: Uint8Array) => {
-      this.fileComp.addPacket(d);
-      this.fileProg.add(d.byteLength);
+      const size = this.fileComp.addPacket(d);
+      this.fileProg.add(size);
     });
-    this.pool.on('error', (err: Error) => {
-      this.close();
-      this.emit('error', err);
-    });
+    this.pool.on('error', (err: Error) => this.throwError(err));
   }
 
   public constructor() {
@@ -128,14 +128,20 @@ export class Receiver extends EventEmitter {
 
         this.pool.send(arr);
         this.emit('progress', spd, rt, pct);
+
+        if (tot === this.fileProg.totalSize) {
+          this.fileProg.end();
+          this.isDone = true;
+          this.emit('done');
+        }
       },
     );
   }
 
-  public find(code: string): void {
+  public find(code: string) {
     this.ws
       .emitWithAck('find', code)
-      .then((data: unknown): void => {
+      .then((data: unknown) => {
         if (data !== null) {
           const { file_name, file_mime, file_size, available } = data as Record<
             string,
@@ -146,18 +152,17 @@ export class Receiver extends EventEmitter {
           this.emit('file', file_name, file_mime, file_size, available);
         }
       })
-      .catch((err: Error): void => {
-        this.ws.close();
-        this.emit('error', err);
-      });
+      .catch((err: Error) => this.throwError(err));
   }
 
-  public start(): void {
+  public start() {
     this.ws.emit('start');
   }
 
-  public close(): void {
+  public close() {
+    this.isDone = true;
     this.ws.close();
     this.pool.close();
+    this.fileProg.end();
   }
 }

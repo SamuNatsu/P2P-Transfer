@@ -121,6 +121,7 @@ export const useReceiver = createGlobalState(() => {
     });
     receiver.on('done', () => {
       state.value = 'done';
+      receiver?.close();
     });
     receiver.on('error', (err: Error) => {
       state.value = 'error';

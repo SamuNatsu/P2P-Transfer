@@ -26,13 +26,19 @@ export class Sender extends EventEmitter {
   private fileFrag: FileFragmentizer;
   private fileProg: FileProgress;
   private sendable: boolean = false;
+  private isDone: boolean = false;
+
+  private throwError(err: Error) {
+    console.error(err);
+    if (!this.isDone) {
+      this.close();
+      this.emit('error', err);
+    }
+  }
 
   private attachListenersForSocket() {
     this.ws.on('connect', () => this.emit('connected'));
-    this.ws.on('connect_error', (err: Error) => {
-      this.close();
-      this.emit('error', err);
-    });
+    this.ws.on('connect_error', (err: Error) => this.throwError(err));
 
     this.ws.on('ready', () => this.emit('negotiate'));
     this.ws.on('message', (data) => {
@@ -46,27 +52,23 @@ export class Sender extends EventEmitter {
       }
     });
 
-    this.ws.on('destroyed', () => {
-      this.close();
-      this.emit('error', Error('Session destroyed'));
-    });
+    this.ws.on('destroyed', () => this.throwError(Error('Session destroyed')));
     this.ws.on('error', (reason: string) => {
-      this.close();
       switch (reason) {
         case 'existed':
-          this.emit('error', Error('Session duplicated'));
+          this.throwError(Error('Session duplicated'));
           break;
         case 'not exists':
-          this.emit('error', Error('Session not exists'));
+          this.throwError(Error('Session not exists'));
           break;
         case 'destroyed':
-          this.emit('error', Error('Session destroyed'));
+          this.throwError(Error('Session destroyed'));
           break;
         case 'no receiver':
-          this.emit('error', Error('Receiver not exists'));
+          this.throwError(Error('Receiver not exists'));
           break;
         default:
-          this.emit('error', Error('Internal server error'));
+          this.throwError(Error('Internal server error'));
       }
     });
   }
@@ -92,20 +94,21 @@ export class Sender extends EventEmitter {
     });
     this.pool.on('message', (d: Uint8Array) => {
       const view = new DataView(d.buffer);
-      const size = view.getBigUint64(0);
-      this.fileProg.set(Number(size));
+      const size = Number(view.getBigUint64(0));
+      this.fileProg.set(size);
+
+      if (size === this.file.size) {
+        this.fileProg.end();
+        this.isDone = true;
+        this.emit('done');
+      }
     });
     this.pool.on('sendable', () => {
       this.sendable = true;
       this.fileFrag.readNext();
     });
-    this.pool.on('busy', () => {
-      this.sendable = false;
-    });
-    this.pool.on('error', (err: Error) => {
-      this.close();
-      this.emit('error', err);
-    });
+    this.pool.on('busy', () => (this.sendable = false));
+    this.pool.on('error', (err: Error) => this.throwError(err));
   }
 
   public constructor(private file: File) {
@@ -131,26 +134,25 @@ export class Sender extends EventEmitter {
     });
   }
 
-  public start(): void {
+  public start() {
     this.ws
       .emitWithAck('new', {
         file_name: this.file.name,
         file_mime: this.file.type.length === 0 ? 'unknown' : this.file.type,
         file_size: this.file.size,
       })
-      .then((code: string | null): void => {
+      .then((code: string | null) => {
         if (code !== null) {
           this.emit('code', code);
         }
       })
-      .catch((err: Error): void => {
-        this.close();
-        this.emit('error', err);
-      });
+      .catch((err: Error) => this.throwError(err));
   }
 
-  public close(): void {
+  public close() {
+    this.isDone = true;
     this.ws.disconnect();
     this.pool.close();
+    this.fileProg.end();
   }
 }
